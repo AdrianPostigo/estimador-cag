@@ -2,7 +2,7 @@ import os
 from anthropic import Anthropic
 from dotenv import load_dotenv
 
-from app.data.estimation_examples import ESTIMATION_EXAMPLES
+from app.context.examples import ESTIMATION_EXAMPLES
 
 load_dotenv()
 
