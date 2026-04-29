@@ -1,0 +1,71 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribución / builds
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Entornos virtuales
+.venv/
+venv/
+env/
+ENV/
+
+# Variables de entorno
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Testing / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# Type checkers / linters
+.mypy_cache/
+.pyre/
+.ruff_cache/
+.pytype/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDEs / Editores
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# SQLite / DB local
+*.sqlite3
+*.db
+
+# UV
+.python-version
+
+# Packaging lockfiles (elige según estrategia)
+uv.lock
+
+# Archivos temporales
+tmp/
+temp/
+*.tmp
