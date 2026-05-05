@@ -6,6 +6,9 @@ from app.context.examples import ESTIMATION_EXAMPLES
 
 load_dotenv()
 
+MODEL_NAME = "claude-sonnet-4-5"
+PROVIDER = "anthropic"
+
 client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
 
@@ -22,14 +25,13 @@ Resumen de reunión:
 Estimación generada:
 {example["estimation"]}
 """
-
     return examples_text
 
 
-def estimate_project_from_transcription(meeting_transcription: str) -> str:
+def build_system_prompt() -> str:
     examples_context = build_examples_context()
 
-    system_prompt = f"""
+    return f"""
 Eres un consultor senior experto en estimación de proyectos software.
 
 Tu tarea es analizar transcripciones de reuniones con clientes y generar una estimación técnica clara, estructurada y realista.
@@ -52,8 +54,12 @@ Ejemplos de referencia:
 {examples_context}
 """
 
-    response = client.messages.create(
-        model="claude-sonnet-4-5",
+
+def stream_project_estimation(meeting_transcription: str, metrics: dict | None = None):
+    system_prompt = build_system_prompt()
+
+    with client.messages.stream(
+        model=MODEL_NAME,
         max_tokens=1200,
         temperature=0.3,
         system=system_prompt,
@@ -64,9 +70,17 @@ Ejemplos de referencia:
 Analiza la siguiente transcripción de reunión y genera una estimación de proyecto:
 
 {meeting_transcription}
-"""
+""",
             }
         ],
-    )
+    ) as stream:
+        for text in stream.text_stream:
+            yield text
 
-    return response.content[0].text
+        final_message = stream.get_final_message()
+
+        if metrics is not None:
+            metrics["model"] = MODEL_NAME
+            metrics["provider"] = PROVIDER
+            metrics["input_tokens"] = final_message.usage.input_tokens
+            metrics["output_tokens"] = final_message.usage.output_tokens
