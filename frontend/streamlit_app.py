@@ -1,18 +1,11 @@
 import os
-import sys
-import time
+from datetime import datetime, timezone
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
+import requests
 import streamlit as st
 
-from app.services.llm_service import (
-    MODEL_NAME,
-    PROVIDER,
-    build_examples_context,
-    build_system_prompt,
-    stream_project_estimation,
-)
+API_BASE_URL = os.getenv("AI_SERVICE_URL", "http://127.0.0.1:8000")
+STREAM_URL = f"{API_BASE_URL}/api/v1/estimate/stream"
 
 st.set_page_config(
     page_title="Estimador CAG",
@@ -21,103 +14,97 @@ st.set_page_config(
 )
 
 st.title("🧠 Estimador CAG de proyectos software")
-st.caption("Introduce una transcripción de reunión y obtén una estimación técnica en streaming.")
+st.caption("Introduce una descripción o transcripción y obtén una estimación técnica.")
 
-if "messages" not in st.session_state:
-    st.session_state.messages = [
-        {
-            "role": "assistant",
-            "content": "Hola. Pega una transcripción de reunión y generaré una estimación técnica.",
-        }
-    ]
+if "last_response" not in st.session_state:
+    st.session_state.last_response = None
 
-if "last_metrics" not in st.session_state:
-    st.session_state.last_metrics = {
-        "model": MODEL_NAME,
-        "provider": PROVIDER,
-        "input_tokens": None,
-        "output_tokens": None,
-        "response_time_seconds": None,
+if "last_error" not in st.session_state:
+    st.session_state.last_error = None
+
+
+def stream_from_api(payload: dict, metadata: dict):
+    with requests.post(STREAM_URL, json=payload, stream=True, timeout=120) as response:
+        response.raise_for_status()
+        metadata["model"] = response.headers.get("X-Model", "-")
+        metadata["provider"] = response.headers.get("X-Provider", "-")
+        metadata["prompt_version"] = response.headers.get("X-Prompt-Version", "-")
+        for chunk in response.iter_content(chunk_size=None, decode_unicode=True):
+            if chunk:
+                yield chunk
+
+
+with st.form("estimation_form"):
+    project_description = st.text_area(
+        "Descripción o transcripción del proyecto",
+        height=260,
+        placeholder="Pega aquí la transcripción de la reunión o describe el proyecto...",
+    )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        output_format = st.selectbox(
+            "Formato de salida",
+            options=["markdown", "plain_text"],
+            index=0,
+        )
+
+    with col2:
+        detail_level = st.selectbox(
+            "Nivel de detalle",
+            options=["low", "medium", "high"],
+            index=1,
+        )
+
+    submitted = st.form_submit_button("Generar estimación")
+
+if submitted:
+    st.session_state.last_response = None
+    st.session_state.last_error = None
+
+    payload = {
+        "project_description": project_description,
+        "output_format": output_format,
+        "detail_level": detail_level,
     }
 
-with st.sidebar:
-    st.header("⚙️ Contexto CAG")
+    metadata: dict = {}
 
-    st.subheader("System prompt activo")
-    st.text_area(
-        label="Prompt",
-        value=build_system_prompt(),
-        height=300,
-        disabled=True,
-        label_visibility="collapsed",
-    )
+    try:
+        st.subheader("Estimación generada")
+        full_text = st.write_stream(stream_from_api(payload, metadata))
 
-    st.subheader("Contexto estático inyectado")
-    st.text_area(
-        label="Ejemplos CAG",
-        value=build_examples_context(),
-        height=300,
-        disabled=True,
-        label_visibility="collapsed",
-    )
-
-    st.subheader("Métricas última llamada")
-
-    metrics = st.session_state.last_metrics
-
-    st.metric("Modelo", metrics.get("model") or "-")
-    st.metric("Proveedor", metrics.get("provider") or "-")
-    st.metric("Input tokens", metrics.get("input_tokens") or "-")
-    st.metric("Output tokens", metrics.get("output_tokens") or "-")
-
-    response_time = metrics.get("response_time_seconds")
-    st.metric(
-        "Tiempo respuesta",
-        f"{response_time:.2f}s" if response_time is not None else "-",
-    )
-
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-
-user_input = st.chat_input("Pega aquí la transcripción de la reunión...")
-
-if user_input:
-    st.session_state.messages.append(
-        {"role": "user", "content": user_input}
-    )
-
-    with st.chat_message("user"):
-        st.markdown(user_input)
-
-    with st.chat_message("assistant"):
-        try:
-            call_metrics = {}
-
-            start_time = time.perf_counter()
-
-            streamed_response = st.write_stream(
-                stream_project_estimation(
-                    meeting_transcription=user_input,
-                    metrics=call_metrics,
-                )
-            )
-
-            end_time = time.perf_counter()
-
-            call_metrics["response_time_seconds"] = end_time - start_time
-
-            st.session_state.last_metrics = call_metrics
-
-        except Exception as e:
-            streamed_response = f"❌ Error generando estimación:\n\n{str(e)}"
-            st.error(streamed_response)
-
-    st.session_state.messages.append(
-        {
-            "role": "assistant",
-            "content": streamed_response,
+        st.session_state.last_response = {
+            "estimation": full_text,
+            "model": metadata.get("model", "-"),
+            "provider": metadata.get("provider", "-"),
+            "prompt_version": metadata.get("prompt_version", "-"),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
         }
-    )
 
-    st.rerun()
+        with st.expander("Metadatos"):
+            st.write("Modelo:", metadata.get("model"))
+            st.write("Proveedor:", metadata.get("provider"))
+            st.write("Versión de prompt:", metadata.get("prompt_version"))
+            st.write("Timestamp:", st.session_state.last_response["timestamp"])
+
+    except Exception as error:
+        st.session_state.last_error = str(error)
+        st.error(f"❌ Error llamando al servicio IA: {error}")
+
+else:
+    if st.session_state.last_error:
+        st.error(f"❌ Error llamando al servicio IA: {st.session_state.last_error}")
+
+    if st.session_state.last_response:
+        data = st.session_state.last_response
+
+        st.subheader("Estimación generada")
+        st.markdown(data["estimation"])
+
+        with st.expander("Metadatos"):
+            st.write("Modelo:", data.get("model"))
+            st.write("Proveedor:", data.get("provider"))
+            st.write("Versión de prompt:", data.get("prompt_version"))
+            st.write("Timestamp:", data.get("timestamp"))

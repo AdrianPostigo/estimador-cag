@@ -1,86 +1,104 @@
-import os
-from anthropic import Anthropic
-from dotenv import load_dotenv
+import hashlib
 
-from app.context.examples import ESTIMATION_EXAMPLES
+import litellm
+import structlog
+from dotenv import load_dotenv
 
 load_dotenv()
 
-MODEL_NAME = "claude-sonnet-4-5"
+MODEL_NAME = "anthropic/claude-sonnet-4-5"
 PROVIDER = "anthropic"
 
-client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+logger = structlog.get_logger(__name__)
+
+# exact-match cache: sha256(system + user) -> {estimation, input_tokens, output_tokens}
+_cache: dict[str, dict] = {}
 
 
-def build_examples_context() -> str:
-    examples_text = ""
-
-    for index, example in enumerate(ESTIMATION_EXAMPLES, start=1):
-        examples_text += f"""
-### Ejemplo {index}
-
-Resumen de reunión:
-{example["meeting_summary"]}
-
-Estimación generada:
-{example["estimation"]}
-"""
-    return examples_text
+def _cache_key(system_prompt: str, user_prompt: str) -> str:
+    raw_prompt = f"{system_prompt.strip()}\n---\n{user_prompt.strip()}"
+    return hashlib.sha256(raw_prompt.encode()).hexdigest()
 
 
-def build_system_prompt() -> str:
-    examples_context = build_examples_context()
+def stream_project_estimation(
+    system_prompt: str,
+    user_prompt: str,
+    metrics: dict | None = None,
+):
+    key = _cache_key(system_prompt, user_prompt)
+    log = logger.bind(cache_key=key[:8], model=MODEL_NAME)
 
-    return f"""
-Eres un consultor senior experto en estimación de proyectos software.
-
-Tu tarea es analizar transcripciones de reuniones con clientes y generar una estimación técnica clara, estructurada y realista.
-
-Debes basarte en los ejemplos previos proporcionados como referencia de estilo, formato y nivel de detalle.
-
-Reglas:
-- Responde siempre en español.
-- Genera una estimación en formato Markdown.
-- Incluye desglose de tareas.
-- Incluye horas estimadas por bloque.
-- Incluye total estimado.
-- Incluye equipo recomendado.
-- Incluye duración aproximada.
-- Si falta información crítica, indica supuestos razonables.
-- No inventes detalles demasiado específicos si no aparecen en la transcripción.
-
-Ejemplos de referencia:
-
-{examples_context}
-"""
-
-
-def stream_project_estimation(meeting_transcription: str, metrics: dict | None = None):
-    system_prompt = build_system_prompt()
-
-    with client.messages.stream(
-        model=MODEL_NAME,
-        max_tokens=1200,
-        temperature=0.3,
-        system=system_prompt,
-        messages=[
-            {
-                "role": "user",
-                "content": f"""
-Analiza la siguiente transcripción de reunión y genera una estimación de proyecto:
-
-{meeting_transcription}
-""",
-            }
-        ],
-    ) as stream:
-        for text in stream.text_stream:
-            yield text
-
-        final_message = stream.get_final_message()
+    if key in _cache:
+        cached = _cache[key]
+        log.info("cache_hit")
 
         if metrics is not None:
             metrics["model"] = MODEL_NAME
             metrics["provider"] = PROVIDER
-            metrics["input_tokens"] = final_message.usage.input_tokens
-            metrics["output_tokens"] = final_message.usage.output_tokens
+            metrics["input_tokens"] = cached["input_tokens"]
+            metrics["output_tokens"] = cached["output_tokens"]
+
+        yield cached["estimation"]
+        return
+
+    log.info("cache_miss")
+
+    response = litellm.completion(
+        model=MODEL_NAME,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        max_tokens=1200,
+        temperature=0.3,
+        stream=True,
+        stream_options={"include_usage": True},
+    )
+
+    log.info("streaming_started")
+
+    chunks: list[str] = []
+    usage = None
+
+    for chunk in response:
+        delta = chunk.choices[0].delta.content
+
+        if delta:
+            chunks.append(delta)
+            yield delta
+
+        if hasattr(chunk, "usage") and chunk.usage is not None:
+            usage = chunk.usage
+
+    full_estimation = "".join(chunks)
+
+    input_tokens = usage.prompt_tokens if usage else None
+    output_tokens = usage.completion_tokens if usage else None
+
+    _cache[key] = {
+        "estimation": full_estimation,
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+    }
+
+    log.info(
+        "streaming_complete",
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        cached=False,
+    )
+
+    if metrics is not None:
+        metrics["model"] = MODEL_NAME
+        metrics["provider"] = PROVIDER
+        metrics["input_tokens"] = input_tokens
+        metrics["output_tokens"] = output_tokens
+
+
+def estimate_project(system_prompt: str, user_prompt: str) -> str:
+    return "".join(
+        stream_project_estimation(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+        )
+    )

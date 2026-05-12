@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 
+from app.observability import configure_logging
 from app.routers.estimations import router as estimations_router
+
+configure_logging()
 
 app = FastAPI(
     title="Software Estimation API",
