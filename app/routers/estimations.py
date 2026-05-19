@@ -1,64 +1,39 @@
-from datetime import datetime, timezone
-
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field
 
+from app.config import MODEL_NAME, PROVIDER
 from app.prompts.loader import render_estimation_prompt
-from app.services.llm_service import MODEL_NAME, PROVIDER, estimate_project, stream_project_estimation
+from app.schemas import EstimationRequest, EstimationResponse
+from app.services.guardrails import parse_and_validate
+from app.services.llm_service import estimate_project, stream_project_estimation
 
 router = APIRouter(
     tags=["Estimations"],
 )
 
 
-class EstimationRequest(BaseModel):
-    project_description: str = Field(
-        ...,
-        min_length=20,
-        description="Descripción o transcripción del proyecto del cliente",
-    )
-    output_format: str = Field(
-        default="markdown",
-        description="Formato de salida esperado: markdown o plain_text",
-    )
-    detail_level: str = Field(
-        default="medium",
-        description="Nivel de detalle: low, medium o high",
-    )
-
-
-class EstimationResponse(BaseModel):
-    estimation: str
-    model: str
-    provider: str
-    prompt_version: str
-    timestamp: str
-
-
 @router.post("/estimate", response_model=EstimationResponse)
 def estimate_project_endpoint(request: EstimationRequest) -> EstimationResponse:
-    prompt_version = "v1"
-
     try:
-        system_prompt, user_prompt = render_estimation_prompt(
-            request=request,
-            version="v1",
-        )
+        system_prompt, user_prompt = render_estimation_prompt(request=request, version="v1")
+        raw = estimate_project(system_prompt=system_prompt, user_prompt=user_prompt)
 
-        estimation = estimate_project(
-            system_prompt=system_prompt,
-            user_prompt=user_prompt,
-        )
+        guardrail = parse_and_validate(raw)
+        if not guardrail.passed:
+            raise HTTPException(
+                status_code=422,
+                detail={"error": "guardrail_failed", "violations": guardrail.violations},
+            )
 
         return EstimationResponse(
-            estimation=estimation,
+            output=guardrail.output,
+            prompt_version="v1",
             model=MODEL_NAME,
             provider=PROVIDER,
-            prompt_version=prompt_version,
-            timestamp=datetime.now(timezone.utc).isoformat(),
         )
 
+    except HTTPException:
+        raise
     except Exception as error:
         raise HTTPException(
             status_code=500,

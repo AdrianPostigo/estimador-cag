@@ -1,17 +1,14 @@
 import hashlib
+from collections.abc import Generator
 
 import litellm
 import structlog
-from dotenv import load_dotenv
 
-load_dotenv()
-
-MODEL_NAME = "anthropic/claude-sonnet-4-5"
-PROVIDER = "anthropic"
+from app.config import MODEL_NAME, PROVIDER
+from app.services.guardrails import parse_and_validate
 
 logger = structlog.get_logger(__name__)
 
-# exact-match cache: sha256(system + user) -> {estimation, input_tokens, output_tokens}
 _cache: dict[str, dict] = {}
 
 
@@ -20,63 +17,92 @@ def _cache_key(system_prompt: str, user_prompt: str) -> str:
     return hashlib.sha256(raw_prompt.encode()).hexdigest()
 
 
+def _stream_completion(messages: list[dict]) -> Generator[str, None, dict]:
+    """Yield text chunks; return usage dict when exhausted."""
+    try:
+        response = litellm.completion(
+            model=MODEL_NAME,
+            messages=messages,
+            max_tokens=1200,
+            temperature=0.3,
+            stream=True,
+            stream_options={"include_usage": True},
+        )
+    except Exception as exc:
+        logger.error("llm_call_failed", error=str(exc), error_type=type(exc).__name__)
+        raise
+
+    chunks: list[str] = []
+    usage = None
+
+    try:
+        for chunk in response:
+            delta = chunk.choices[0].delta.content
+            if delta:
+                chunks.append(delta)
+                yield delta
+            if hasattr(chunk, "usage") and chunk.usage is not None:
+                usage = chunk.usage
+    except Exception as exc:
+        logger.error("streaming_failed", error=str(exc), error_type=type(exc).__name__)
+        raise
+
+    return {
+        "full_text": "".join(chunks),
+        "input_tokens": usage.prompt_tokens if usage else None,
+        "output_tokens": usage.completion_tokens if usage else None,
+    }
+
+
 def stream_project_estimation(
     system_prompt: str,
     user_prompt: str,
     metrics: dict | None = None,
-):
+) -> Generator[str, None, None]:
     key = _cache_key(system_prompt, user_prompt)
     log = logger.bind(cache_key=key[:8], model=MODEL_NAME)
 
     if key in _cache:
         cached = _cache[key]
         log.info("cache_hit")
-
         if metrics is not None:
             metrics["model"] = MODEL_NAME
             metrics["provider"] = PROVIDER
             metrics["input_tokens"] = cached["input_tokens"]
             metrics["output_tokens"] = cached["output_tokens"]
-
         yield cached["estimation"]
         return
 
     log.info("cache_miss")
-
-    response = litellm.completion(
-        model=MODEL_NAME,
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
-        ],
-        max_tokens=1200,
-        temperature=0.3,
-        stream=True,
-        stream_options={"include_usage": True},
-    )
-
     log.info("streaming_started")
 
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt},
+    ]
+
+    gen = _stream_completion(messages)
     chunks: list[str] = []
-    usage = None
 
-    for chunk in response:
-        delta = chunk.choices[0].delta.content
+    try:
+        while True:
+            chunk = next(gen)
+            chunks.append(chunk)
+            yield chunk
+    except StopIteration as stop:
+        result = stop.value or {}
+        full_text = "".join(chunks)
+        input_tokens = result.get("input_tokens")
+        output_tokens = result.get("output_tokens")
+    except Exception:
+        raise
 
-        if delta:
-            chunks.append(delta)
-            yield delta
-
-        if hasattr(chunk, "usage") and chunk.usage is not None:
-            usage = chunk.usage
-
-    full_estimation = "".join(chunks)
-
-    input_tokens = usage.prompt_tokens if usage else None
-    output_tokens = usage.completion_tokens if usage else None
+    guardrail = parse_and_validate(full_text)
+    if not guardrail.passed:
+        log.warning("guardrail_violations", violations=guardrail.violations)
 
     _cache[key] = {
-        "estimation": full_estimation,
+        "estimation": full_text,
         "input_tokens": input_tokens,
         "output_tokens": output_tokens,
     }
@@ -86,6 +112,7 @@ def stream_project_estimation(
         input_tokens=input_tokens,
         output_tokens=output_tokens,
         cached=False,
+        guardrail_passed=guardrail.passed,
     )
 
     if metrics is not None:
@@ -93,6 +120,39 @@ def stream_project_estimation(
         metrics["provider"] = PROVIDER
         metrics["input_tokens"] = input_tokens
         metrics["output_tokens"] = output_tokens
+
+
+def stream_with_history(messages: list[dict]) -> Generator[str, None, None]:
+    """Stream a multi-turn completion from a pre-built messages list."""
+    log = logger.bind(model=MODEL_NAME, turns=sum(1 for m in messages if m["role"] == "user"))
+    log.info("history_streaming_started")
+
+    gen = _stream_completion(messages)
+    chunks: list[str] = []
+
+    try:
+        while True:
+            chunk = next(gen)
+            chunks.append(chunk)
+            yield chunk
+    except StopIteration as stop:
+        result = stop.value or {}
+        full_text = "".join(chunks)
+        input_tokens = result.get("input_tokens")
+        output_tokens = result.get("output_tokens")
+    except Exception:
+        raise
+
+    guardrail = parse_and_validate(full_text)
+    if not guardrail.passed:
+        log.warning("guardrail_violations", violations=guardrail.violations)
+
+    log.info(
+        "history_streaming_complete",
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        guardrail_passed=guardrail.passed,
+    )
 
 
 def estimate_project(system_prompt: str, user_prompt: str) -> str:

@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from app.observability import configure_logging
 from app.routers.estimations import router as estimations_router
+from app.routers.sessions import router as sessions_router
 
 configure_logging()
 
@@ -11,11 +12,8 @@ app = FastAPI(
     version="1.0.0",
 )
 
-app.include_router(
-    estimations_router,
-    prefix="/api/v1",
-    tags=["Estimations"]
-)
+app.include_router(estimations_router, prefix="/api/v1")
+app.include_router(sessions_router, prefix="/api/v1")
 
 
 @app.get("/health", tags=["Health"])

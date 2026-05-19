@@ -4,39 +4,37 @@ Entrada:
 El cliente necesita una aplicación web interna para gestionar incidencias de empleados. Los usuarios podrán crear tickets, asignarlos a departamentos, cambiar estados y consultar histórico.
 
 Salida esperada:
-## Resumen del proyecto
-
-Aplicación web interna para gestión de incidencias corporativas.
-
-## Supuestos
-
-- Existirá autenticación básica.
-- Habrá roles diferenciados entre empleado, gestor y administrador.
-- No se incluye integración avanzada con sistemas externos.
-
-## Desglose estimado
-
-| Bloque | Horas |
-|---|---:|
-| Análisis funcional | 8 - 12 |
-| Diseño de modelo de datos | 6 - 10 |
-| Backend API | 24 - 36 |
-| Frontend | 32 - 48 |
-| Autenticación y roles | 12 - 20 |
-| Testing y ajustes | 16 - 24 |
-
-## Total estimado
-
-98 - 150 horas.
-
-## Equipo recomendado
-
-- 1 desarrollador full-stack.
-- Apoyo puntual de QA o revisión técnica.
-
-## Duración aproximada
-
-3 - 5 semanas.
+{
+  "project_summary": "Aplicación web interna para gestión de incidencias corporativas con roles diferenciados y flujo de estados.",
+  "assumptions": [
+    "Existirá autenticación básica con roles: empleado, gestor y administrador.",
+    "No se incluye integración con sistemas externos de RRHH.",
+    "La aplicación será web únicamente, sin versión móvil nativa."
+  ],
+  "tasks": [
+    {"name": "Análisis funcional y diseño de modelo de datos", "hours_min": 8, "hours_max": 16},
+    {"name": "Backend API (CRUD tickets, estados, asignaciones)", "hours_min": 24, "hours_max": 36},
+    {"name": "Autenticación y gestión de roles", "hours_min": 12, "hours_max": 20},
+    {"name": "Frontend (portal empleado + panel gestor)", "hours_min": 32, "hours_max": 48},
+    {"name": "Testing y ajustes finales", "hours_min": 16, "hours_max": 24}
+  ],
+  "total_hours_min": 92,
+  "total_hours_max": 144,
+  "recommended_team": [
+    "1 desarrollador full-stack senior",
+    "Apoyo puntual de QA o revisión técnica"
+  ],
+  "duration_weeks_min": 4,
+  "duration_weeks_max": 6,
+  "risks": [
+    "Cambios en el flujo de estados durante el desarrollo pueden impactar el modelo de datos.",
+    "Definición tardía de los permisos por rol puede bloquear el frontend."
+  ],
+  "open_questions": [
+    "¿Existe SSO corporativo que deba integrarse?",
+    "¿Se requieren notificaciones por email al cambiar el estado de un ticket?"
+  ]
+}
 
 ---
 
@@ -46,78 +44,34 @@ Entrada:
 Una empresa quiere migrar una hoja Excel compleja de presupuestos a una herramienta web. Debe permitir introducir partidas, calcular totales, aplicar descuentos y exportar PDF.
 
 Salida esperada:
-## Resumen del proyecto
-
-Herramienta web para generación de presupuestos comerciales a partir de reglas actualmente gestionadas en Excel.
-
-## Supuestos
-
-- Las reglas de cálculo serán proporcionadas por el cliente.
-- La exportación PDF tendrá una plantilla inicial sencilla.
-- No se incluye facturación ni firma digital.
-
-## Desglose estimado
-
-| Bloque | Horas |
-|---|---:|
-| Análisis del Excel actual | 12 - 20 |
-| Modelado de reglas de cálculo | 16 - 28 |
-| Backend | 20 - 32 |
-| Frontend | 28 - 44 |
-| Exportación PDF | 12 - 20 |
-| Testing con casos reales | 16 - 28 |
-
-## Total estimado
-
-104 - 172 horas.
-
-## Equipo recomendado
-
-- 1 desarrollador full-stack.
-- 1 perfil funcional para validar reglas de negocio.
-
-## Duración aproximada
-
-4 - 6 semanas.
-
----
-
-### Ejemplo 3
-
-Entrada:
-El cliente necesita un panel de control para visualizar métricas de ventas desde una base de datos existente. Quiere filtros por fecha, producto y zona comercial.
-
-Salida esperada:
-## Resumen del proyecto
-
-Dashboard web para consulta y análisis de métricas comerciales.
-
-## Supuestos
-
-- La base de datos ya existe y es accesible.
-- No se contempla modificación de los datos desde la interfaz.
-- Los gráficos serán estándar: barras, líneas y tablas.
-
-## Desglose estimado
-
-| Bloque | Horas |
-|---|---:|
-| Revisión de base de datos | 8 - 16 |
-| Definición de KPIs | 8 - 12 |
-| Backend de consulta | 16 - 28 |
-| Frontend dashboard | 28 - 44 |
-| Filtros y visualizaciones | 16 - 28 |
-| Testing y validación | 12 - 20 |
-
-## Total estimado
-
-88 - 148 horas.
-
-## Equipo recomendado
-
-- 1 desarrollador full-stack.
-- Validación puntual de negocio.
-
-## Duración aproximada
-
-3 - 5 semanas.
+{
+  "project_summary": "Herramienta web para generación de presupuestos comerciales, reemplazando un Excel con reglas de cálculo complejas.",
+  "assumptions": [
+    "Las reglas de cálculo y descuentos serán proporcionadas por el cliente en formato documentado.",
+    "La exportación PDF usará una plantilla inicial definida por el cliente.",
+    "No se incluye facturación ni firma digital en este alcance."
+  ],
+  "tasks": [
+    {"name": "Análisis del Excel y modelado de reglas", "hours_min": 16, "hours_max": 28},
+    {"name": "Backend y motor de cálculo", "hours_min": 20, "hours_max": 32},
+    {"name": "Frontend (editor de partidas y resumen)", "hours_min": 28, "hours_max": 44},
+    {"name": "Exportación PDF", "hours_min": 12, "hours_max": 20},
+    {"name": "Testing con casos reales del cliente", "hours_min": 16, "hours_max": 28}
+  ],
+  "total_hours_min": 92,
+  "total_hours_max": 152,
+  "recommended_team": [
+    "1 desarrollador full-stack",
+    "1 perfil funcional del cliente para validar reglas de negocio"
+  ],
+  "duration_weeks_min": 4,
+  "duration_weeks_max": 7,
+  "risks": [
+    "Reglas de cálculo mal documentadas pueden generar múltiples iteraciones de corrección.",
+    "La complejidad del PDF puede subestimarse si la plantilla tiene diseño elaborado."
+  ],
+  "open_questions": [
+    "¿Cuántos tipos de descuento existen y cómo se aplican (acumulables, excluyentes)?",
+    "¿Los presupuestos se guardan en base de datos o solo se generan al momento?"
+  ]
+}

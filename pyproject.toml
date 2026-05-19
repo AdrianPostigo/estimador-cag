@@ -7,9 +7,13 @@ requires-python = ">=3.11"
 dependencies = [
     "anthropic>=0.97.0",
     "fastapi>=0.136.1",
+    "httpx>=0.28.0",
     "litellm>=1.83.14",
     "pydantic-settings>=2.14.0",
+    "pypdf>=5.0.0",
+    "python-docx>=1.1.0",
     "python-dotenv>=1.2.2",
+    "python-multipart>=0.0.20",
     "requests>=2.33.1",
     "streamlit>=1.57.0",
     "structlog>=24.4.0",
@@ -19,4 +23,8 @@ dependencies = [
 [dependency-groups]
 dev = [
     "pytest>=9.0.3",
+    "pytest-asyncio>=0.25.0",
 ]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
