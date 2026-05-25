@@ -53,6 +53,7 @@ app/
     sessions.py                  # POST /sessions and POST /sessions/{session_id}/estimate (multipart)
   services/
     llm_service.py               # LiteLLM wrapper: _stream_completion(), stream_project_estimation(), stream_with_history()
+    llm_wrapper.py               # Observable LLM metrics: MODEL_COSTS, calculate_cost(), create_metrics()
     guardrails.py                # parse_and_validate(): JSON extract + Pydantic EstimationOutput validation
     attachments.py               # extract_text(): pypdf for PDF, python-docx for DOCX, UTF-8 for TXT
     metadata.py                  # update_metadata(): heuristic extraction from EstimationOutput (no extra LLM call)
@@ -87,6 +88,8 @@ tests/
 **Attachment support** — `attachments.py` dispatches by filename extension: `.pdf` → `pypdf.PdfReader`, `.docx` → `python-docx`, else UTF-8. Extracted text is appended to the user message as `"\n\n--- adjunto: {filename} ---\n{text}"` before being added to the conversation history.
 
 **Heuristic metadata** — `update_metadata()` extracts `agreed_scope` from `project_summary`, `assumed_team_size` from `len(recommended_team)`, and `mentioned_technologies` by keyword scanning the description. No extra LLM call. The metadata is injected into `system.j2` on turns > 0 via the `{% if project_metadata %}` block.
+
+**Observable LLM metrics** — `llm_wrapper.py` provides `MODEL_COSTS` (per-model input/output pricing in USD), `calculate_cost()` (computes call cost), and `create_metrics()` (wraps all observability). `_stream_completion()` tracks latency via `time.time()` start/stop. Every LLM call logs `streaming_complete` or `history_streaming_complete` events with `latency_ms`, `cost_usd`, `input_tokens`, `output_tokens`. Cache hits log 0ms latency and cached cost.
 
 **Two endpoint families:**
 - `/estimate` (blocking) + `/estimate/stream` (streaming) — stateless, no session, no attachments
@@ -167,9 +170,9 @@ structlog emits structured events at key points:
 | `cache_hit` | `cache_key`, `model` |
 | `cache_miss` | `cache_key`, `model` |
 | `streaming_started` | `cache_key`, `model` |
-| `streaming_complete` | `input_tokens`, `output_tokens`, `cached`, `guardrail_passed` |
+| `streaming_complete` | `input_tokens`, `output_tokens`, `latency_ms`, `cost_usd`, `cached`, `guardrail_passed` |
 | `history_streaming_started` | `model`, `turns` |
-| `history_streaming_complete` | `input_tokens`, `output_tokens`, `guardrail_passed` |
+| `history_streaming_complete` | `input_tokens`, `output_tokens`, `latency_ms`, `cost_usd`, `guardrail_passed` |
 | `guardrail_violations` | `violations` (list of strings) |
 | `llm_call_failed` | `error`, `error_type` |
 | `streaming_failed` | `error`, `error_type` |
