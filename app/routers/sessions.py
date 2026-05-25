@@ -10,10 +10,10 @@ from app.schemas import (
     OutputFormat,
     ProjectType,
     TierInfo,
+    ACBInfo,
 )
 from app.services.attachments import extract_text
-from app.services.guardrails import parse_and_validate
-from app.services.llm_service import stream_with_history
+from app.services.actor_critic_boss import estimate_with_acb
 from app.services.metadata import update_metadata
 from app.services.tier_scoring import score_input, get_model_for_tier
 from app.sessions import Session, create_session, get_session
@@ -72,22 +72,20 @@ def session_estimate(
     messages.append({"role": "user", "content": user_content})
 
     try:
-        raw_output = "".join(stream_with_history(messages, model_name=model_name))
+        output, raw_output, acb_info = estimate_with_acb(
+            messages=messages,
+            metadata=session.metadata,
+            description=description,
+            model_name=model_name,
+        )
     except Exception as error:
         raise HTTPException(
             status_code=500,
             detail=f"Error generating estimation: {str(error)}",
         ) from error
 
-    guardrail = parse_and_validate(raw_output)
-    if not guardrail.passed:
-        raise HTTPException(
-            status_code=422,
-            detail={"error": "guardrail_failed", "violations": guardrail.violations},
-        )
-
     session.history.add_turn(user_content, raw_output)
-    session.metadata = update_metadata(session.metadata, guardrail.output, description)
+    session.metadata = update_metadata(session.metadata, output, description)
 
     tier_info = TierInfo(
         tier=tier,
@@ -98,10 +96,11 @@ def session_estimate(
     )
 
     return EstimationResponse(
-        output=guardrail.output,
+        output=output,
         prompt_version="v1",
         model=model_name,
         provider=PROVIDER,
         project_metadata=session.metadata,
         tier_info=tier_info,
+        acb_info=acb_info,
     )

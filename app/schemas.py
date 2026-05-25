@@ -93,6 +93,12 @@ class TierInfo(BaseModel):
     reason: str
 
 
+class ACBInfo(BaseModel):
+    iterations: int
+    re_estimated: bool
+    critic_issues: list[str]
+
+
 class EstimationResponse(BaseModel):
     output: EstimationOutput
     prompt_version: str
@@ -100,3 +106,4 @@ class EstimationResponse(BaseModel):
     provider: str
     project_metadata: Optional[ProjectMetadata] = None
     tier_info: Optional[TierInfo] = None
+    acb_info: Optional[ACBInfo] = None
