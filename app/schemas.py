@@ -85,9 +85,18 @@ class EstimationRequest(BaseModel):
     output_format: OutputFormat
 
 
+class TierInfo(BaseModel):
+    tier: int
+    score: float
+    model_selected: str
+    keywords_detected: list[str]
+    reason: str
+
+
 class EstimationResponse(BaseModel):
     output: EstimationOutput
     prompt_version: str
     model: str
     provider: str
     project_metadata: Optional[ProjectMetadata] = None
+    tier_info: Optional[TierInfo] = None

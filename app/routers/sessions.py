@@ -1,7 +1,7 @@
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
 
-from app.config import MODEL_NAME, PROVIDER
+from app.config import PROVIDER
 from app.prompts.loader import render_estimation_prompt
 from app.schemas import (
     DetailLevel,
@@ -9,11 +9,13 @@ from app.schemas import (
     EstimationResponse,
     OutputFormat,
     ProjectType,
+    TierInfo,
 )
 from app.services.attachments import extract_text
 from app.services.guardrails import parse_and_validate
 from app.services.llm_service import stream_with_history
 from app.services.metadata import update_metadata
+from app.services.tier_scoring import score_input, get_model_for_tier
 from app.sessions import Session, create_session, get_session
 
 router = APIRouter(tags=["Sessions"])
@@ -61,11 +63,16 @@ def session_estimate(
         project_metadata=session.metadata if session.history.turn_count > 0 else None,
     )
 
+    # Score input and select model dynamically
+    tier_scoring = score_input(description)
+    tier = tier_scoring["tier"]
+    model_name = get_model_for_tier(tier)
+
     messages = session.history.to_messages_list(system_prompt)
     messages.append({"role": "user", "content": user_content})
 
     try:
-        raw_output = "".join(stream_with_history(messages))
+        raw_output = "".join(stream_with_history(messages, model_name=model_name))
     except Exception as error:
         raise HTTPException(
             status_code=500,
@@ -82,10 +89,19 @@ def session_estimate(
     session.history.add_turn(user_content, raw_output)
     session.metadata = update_metadata(session.metadata, guardrail.output, description)
 
+    tier_info = TierInfo(
+        tier=tier,
+        score=tier_scoring["score"],
+        model_selected=model_name,
+        keywords_detected=tier_scoring["keywords_found"],
+        reason=tier_scoring["reason"],
+    )
+
     return EstimationResponse(
         output=guardrail.output,
         prompt_version="v1",
-        model=MODEL_NAME,
+        model=model_name,
         provider=PROVIDER,
         project_metadata=session.metadata,
+        tier_info=tier_info,
     )

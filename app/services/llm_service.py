@@ -17,11 +17,14 @@ def _cache_key(system_prompt: str, user_prompt: str) -> str:
     return hashlib.sha256(raw_prompt.encode()).hexdigest()
 
 
-def _stream_completion(messages: list[dict]) -> Generator[str, None, dict]:
+def _stream_completion(messages: list[dict], model_name: str | None = None) -> Generator[str, None, dict]:
     """Yield text chunks; return usage dict when exhausted."""
+    if model_name is None:
+        model_name = MODEL_NAME
+
     try:
         response = litellm.completion(
-            model=MODEL_NAME,
+            model=model_name,
             messages=messages,
             max_tokens=1200,
             temperature=0.3,
@@ -58,15 +61,19 @@ def stream_project_estimation(
     system_prompt: str,
     user_prompt: str,
     metrics: dict | None = None,
+    model_name: str | None = None,
 ) -> Generator[str, None, None]:
+    if model_name is None:
+        model_name = MODEL_NAME
+
     key = _cache_key(system_prompt, user_prompt)
-    log = logger.bind(cache_key=key[:8], model=MODEL_NAME)
+    log = logger.bind(cache_key=key[:8], model=model_name)
 
     if key in _cache:
         cached = _cache[key]
         log.info("cache_hit")
         if metrics is not None:
-            metrics["model"] = MODEL_NAME
+            metrics["model"] = model_name
             metrics["provider"] = PROVIDER
             metrics["input_tokens"] = cached["input_tokens"]
             metrics["output_tokens"] = cached["output_tokens"]
@@ -81,7 +88,7 @@ def stream_project_estimation(
         {"role": "user", "content": user_prompt},
     ]
 
-    gen = _stream_completion(messages)
+    gen = _stream_completion(messages, model_name=model_name)
     chunks: list[str] = []
 
     try:
@@ -116,18 +123,21 @@ def stream_project_estimation(
     )
 
     if metrics is not None:
-        metrics["model"] = MODEL_NAME
+        metrics["model"] = model_name
         metrics["provider"] = PROVIDER
         metrics["input_tokens"] = input_tokens
         metrics["output_tokens"] = output_tokens
 
 
-def stream_with_history(messages: list[dict]) -> Generator[str, None, None]:
+def stream_with_history(messages: list[dict], model_name: str | None = None) -> Generator[str, None, None]:
     """Stream a multi-turn completion from a pre-built messages list."""
-    log = logger.bind(model=MODEL_NAME, turns=sum(1 for m in messages if m["role"] == "user"))
+    if model_name is None:
+        model_name = MODEL_NAME
+
+    log = logger.bind(model=model_name, turns=sum(1 for m in messages if m["role"] == "user"))
     log.info("history_streaming_started")
 
-    gen = _stream_completion(messages)
+    gen = _stream_completion(messages, model_name=model_name)
     chunks: list[str] = []
 
     try:
