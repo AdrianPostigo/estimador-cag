@@ -1,23 +1,17 @@
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
-import structlog
 
 from app.config import PROVIDER
-from app.prompts.loader import render_estimation_prompt
 from app.schemas import (
     DetailLevel,
-    EstimationRequest,
     EstimationResponse,
     OutputFormat,
     ProjectType,
     TierInfo,
-    ACBInfo,
 )
 from app.services.attachments import extract_text
-from app.services.actor_critic_boss import estimate_with_acb
-from app.services.metadata import update_metadata
-from app.services.tier_scoring import score_input, get_model_for_tier
-from app.sessions import Session, create_session, get_session
+from app.services.estimation_service import estimate_conversational
+from app.sessions import create_session, get_session, Session
 
 router = APIRouter(tags=["Sessions"])
 
@@ -68,48 +62,30 @@ def session_estimate(
     output_format: OutputFormat = Form(...),
     attachment: UploadFile | None = File(None),
 ) -> EstimationResponse:
-    logger = structlog.get_logger(__name__)
+    from app.services.tier_scoring import get_model_for_tier, score_input
+
     session = get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    request = EstimationRequest(
-        description=description,
-        project_type=project_type,
-        detail_level=detail_level,
-        output_format=output_format,
-    )
-
-    user_content = description
+    # Extract attachment if present
+    attachment_text = ""
+    attachment_filename = ""
     if attachment is not None:
         raw = attachment.file.read()
-        att_text = extract_text(attachment.filename or "file", raw)
-        user_content += f"\n\n--- adjunto: {attachment.filename} ---\n{att_text}"
+        attachment_text = extract_text(attachment.filename or "file", raw)
+        attachment_filename = attachment.filename or "file"
 
-    system_prompt, _ = render_estimation_prompt(
-        request=request,
-        version="v1",
-        project_metadata=session.metadata if session.history.turn_count > 0 else None,
-    )
-
-    # Score input and select model dynamically
-    tier_scoring = score_input(description)
-    tier = tier_scoring["tier"]
-    model_name = get_model_for_tier(tier)
-
-    # Store tier observable in session
-    session.last_resolved_tier = tier
-    session.last_tier_rule = tier_scoring["reason"]
-
-    messages = session.history.to_messages_list(system_prompt)
-    messages.append({"role": "user", "content": user_content})
-
+    # Use unified estimation service
     try:
-        output, raw_output, acb_info = estimate_with_acb(
-            messages=messages,
-            metadata=session.metadata,
+        output, observables = estimate_conversational(
+            session=session,
             description=description,
-            model_name=model_name,
+            project_type=project_type,
+            detail_level=detail_level,
+            output_format=output_format,
+            attachment_text=attachment_text,
+            attachment_filename=attachment_filename,
         )
     except Exception as error:
         raise HTTPException(
@@ -117,27 +93,16 @@ def session_estimate(
             detail=f"Error generating estimation: {str(error)}",
         ) from error
 
-    session.history.add_turn(user_content, raw_output)
-    session.metadata = update_metadata(session.metadata, output, description)
+    # Get tier info for response
+    tier_scoring = score_input(description)
+    model_name = get_model_for_tier(session.last_resolved_tier)
 
     tier_info = TierInfo(
-        tier=tier,
+        tier=session.last_resolved_tier,
         score=tier_scoring["score"],
         model_selected=model_name,
         keywords_detected=tier_scoring["keywords_found"],
         reason=tier_scoring["reason"],
-    )
-
-    # Emit session observables
-    logger.info(
-        "session_estimate_complete",
-        session_id=session_id,
-        turn_count=session.history.turn_count,
-        message_count=len(session.history._messages),
-        anchors_count=session.anchors_count,
-        summary_chars=len(session.history._accumulated_summary or ""),
-        last_resolved_tier=session.last_resolved_tier,
-        last_tier_rule=session.last_tier_rule,
     )
 
     return EstimationResponse(
@@ -147,5 +112,4 @@ def session_estimate(
         provider=PROVIDER,
         project_metadata=session.metadata,
         tier_info=tier_info,
-        acb_info=acb_info,
     )

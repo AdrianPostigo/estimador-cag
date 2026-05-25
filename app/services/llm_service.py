@@ -1,6 +1,7 @@
 import hashlib
 import time
 from collections.abc import Generator
+from typing import TYPE_CHECKING
 
 import litellm
 import structlog
@@ -8,6 +9,9 @@ import structlog
 from app.config import MODEL_NAME, PROVIDER
 from app.services.guardrails import parse_and_validate
 from app.services.llm_wrapper import create_metrics
+
+if TYPE_CHECKING:
+    from app.services.estimation_service import capture_llm_metrics
 
 logger = structlog.get_logger(__name__)
 
@@ -148,6 +152,19 @@ def stream_project_estimation(
         metrics["output_tokens"] = output_tokens
         metrics["latency_ms"] = latency_ms
         metrics["cost_usd"] = cost_usd
+
+    # Capture metrics for EstimationService to retrieve
+    try:
+        from app.services.estimation_service import capture_llm_metrics
+        capture_llm_metrics({
+            "tokens_in": input_tokens or 0,
+            "tokens_out": output_tokens or 0,
+            "cost_usd": cost_usd,
+            "latency_ms": latency_ms,
+            "cache_hit_kind": "none",
+        })
+    except ImportError:
+        pass  # estimation_service not imported yet
 
 
 def stream_with_history(messages: list[dict], model_name: str | None = None) -> Generator[str, None, None]:

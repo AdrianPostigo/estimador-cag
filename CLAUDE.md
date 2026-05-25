@@ -54,6 +54,7 @@ app/
   services/
     llm_service.py               # LiteLLM wrapper: _stream_completion(), stream_project_estimation(), stream_with_history()
     llm_wrapper.py               # Observable LLM metrics: MODEL_COSTS, calculate_cost(), create_metrics()
+    estimation_service.py        # Unified estimation: estimate_conversational() with turn-level observables
     guardrails.py                # parse_and_validate(): JSON extract + Pydantic EstimationOutput validation
     attachments.py               # extract_text(): pypdf for PDF, python-docx for DOCX, UTF-8 for TXT
     metadata.py                  # update_metadata(): heuristic extraction from EstimationOutput (no extra LLM call)
@@ -188,7 +189,7 @@ structlog emits structured events at key points:
 | `streaming_complete` | `input_tokens`, `output_tokens`, `latency_ms`, `cost_usd`, `cached`, `guardrail_passed` |
 | `history_streaming_started` | `model`, `turns` |
 | `history_streaming_complete` | `input_tokens`, `output_tokens`, `latency_ms`, `cost_usd`, `guardrail_passed` |
-| `session_estimate_complete` | `session_id`, `turn_count`, `message_count`, `anchors_count`, `summary_chars`, `last_resolved_tier`, `last_tier_rule` |
+| `turn_observed` | `turn_index`, `session_id`, `enriched_transcript_chars`, `attachments_total_chars`, `messages_in_window`, `anchors_count`, `summary_chars`, `tokens_in`, `tokens_out`, `cost_usd`, `latency_ms`, `cache_hit_kind`, `last_resolved_tier`, `last_tier_rule` |
 | `guardrail_violations` | `violations` (list of strings) |
 | `llm_call_failed` | `error`, `error_type` |
 | `streaming_failed` | `error`, `error_type` |
