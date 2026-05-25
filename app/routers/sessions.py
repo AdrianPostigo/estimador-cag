@@ -1,5 +1,6 @@
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
+import structlog
 
 from app.config import PROVIDER
 from app.prompts.loader import render_estimation_prompt
@@ -25,10 +26,37 @@ class CreateSessionResponse(BaseModel):
     session_id: str
 
 
+class SessionDebugResponse(BaseModel):
+    session_id: str
+    message_count: int
+    anchors_count: int
+    summary_chars: int
+    last_resolved_tier: int | None
+    last_tier_rule: str | None
+
+
 @router.post("/sessions", response_model=CreateSessionResponse)
 def create_session_endpoint() -> CreateSessionResponse:
     session: Session = create_session()
     return CreateSessionResponse(session_id=session.session_id)
+
+
+@router.get("/sessions/{session_id}", response_model=SessionDebugResponse)
+def get_session_debug(session_id: str) -> SessionDebugResponse:
+    """Debug endpoint exposing internal session observables."""
+    session = get_session(session_id)
+    if session is None:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    summary_text = session.history._accumulated_summary or ""
+    return SessionDebugResponse(
+        session_id=session_id,
+        message_count=len(session.history._messages),
+        anchors_count=session.anchors_count,
+        summary_chars=len(summary_text),
+        last_resolved_tier=session.last_resolved_tier,
+        last_tier_rule=session.last_tier_rule,
+    )
 
 
 @router.post("/sessions/{session_id}/estimate", response_model=EstimationResponse)
@@ -40,6 +68,7 @@ def session_estimate(
     output_format: OutputFormat = Form(...),
     attachment: UploadFile | None = File(None),
 ) -> EstimationResponse:
+    logger = structlog.get_logger(__name__)
     session = get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -68,6 +97,10 @@ def session_estimate(
     tier = tier_scoring["tier"]
     model_name = get_model_for_tier(tier)
 
+    # Store tier observable in session
+    session.last_resolved_tier = tier
+    session.last_tier_rule = tier_scoring["reason"]
+
     messages = session.history.to_messages_list(system_prompt)
     messages.append({"role": "user", "content": user_content})
 
@@ -93,6 +126,18 @@ def session_estimate(
         model_selected=model_name,
         keywords_detected=tier_scoring["keywords_found"],
         reason=tier_scoring["reason"],
+    )
+
+    # Emit session observables
+    logger.info(
+        "session_estimate_complete",
+        session_id=session_id,
+        turn_count=session.history.turn_count,
+        message_count=len(session.history._messages),
+        anchors_count=session.anchors_count,
+        summary_chars=len(session.history._accumulated_summary or ""),
+        last_resolved_tier=session.last_resolved_tier,
+        last_tier_rule=session.last_tier_rule,
     )
 
     return EstimationResponse(

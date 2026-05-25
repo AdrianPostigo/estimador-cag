@@ -145,6 +145,21 @@ attachment      file (pdf / docx / txt, optional)
 // Response 422 — guardrail failure
 ```
 
+**`GET /api/v1/sessions/{session_id}` (debug endpoint)**
+```json
+// Response 200
+{
+  "session_id": "uuid4-string",
+  "message_count": 12,
+  "anchors_count": 3,
+  "summary_chars": 456,
+  "last_resolved_tier": 2,
+  "last_tier_rule": "Medium complexity: keyword density score 0.65"
+}
+
+// Response 404 — session not found
+```
+
 ## Schemas (`app/schemas.py`)
 
 ```python
@@ -173,6 +188,7 @@ structlog emits structured events at key points:
 | `streaming_complete` | `input_tokens`, `output_tokens`, `latency_ms`, `cost_usd`, `cached`, `guardrail_passed` |
 | `history_streaming_started` | `model`, `turns` |
 | `history_streaming_complete` | `input_tokens`, `output_tokens`, `latency_ms`, `cost_usd`, `guardrail_passed` |
+| `session_estimate_complete` | `session_id`, `turn_count`, `message_count`, `anchors_count`, `summary_chars`, `last_resolved_tier`, `last_tier_rule` |
 | `guardrail_violations` | `violations` (list of strings) |
 | `llm_call_failed` | `error`, `error_type` |
 | `streaming_failed` | `error`, `error_type` |

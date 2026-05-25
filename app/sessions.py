@@ -68,6 +68,23 @@ class Session:
         self.session_id: str = str(uuid4())
         self.history: ConversationHistory = ConversationHistory()
         self.metadata: ProjectMetadata = ProjectMetadata()
+        # Observables
+        self.last_resolved_tier: int | None = None
+        self.last_tier_rule: str | None = None
+
+    @property
+    def anchors_count(self) -> int:
+        """Count how many metadata anchors are resolved (non-empty)."""
+        count = 0
+        if self.metadata.project_name:
+            count += 1
+        if self.metadata.assumed_team_size:
+            count += 1
+        if self.metadata.mentioned_technologies:
+            count += 1
+        if self.metadata.agreed_scope:
+            count += 1
+        return count
 
 
 _sessions: dict[str, Session] = {}
