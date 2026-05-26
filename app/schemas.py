@@ -104,6 +104,10 @@ class EstimationResponse(BaseModel):
     prompt_version: str
     model: str
     provider: str
+    cost_usd: Optional[float] = None
+    latency_ms: Optional[float] = None
+    tokens_in: Optional[int] = None
+    tokens_out: Optional[int] = None
     project_metadata: Optional[ProjectMetadata] = None
     tier_info: Optional[TierInfo] = None
     acb_info: Optional[ACBInfo] = None

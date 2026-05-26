@@ -77,10 +77,10 @@ def score_input(description: str) -> dict:
 
 
 def get_model_for_tier(tier: int) -> str:
-    """Return LiteLLM model string for given tier."""
-    models = {
-        3: "anthropic/claude-haiku-4-5-20251001",      # High specificity → Haiku (fast, cheap)
-        2: "anthropic/claude-sonnet-4-6-20250514",     # Medium → Sonnet (balanced)
-        1: "anthropic/claude-opus-4-7-20250805",       # Low specificity → Opus (powerful)
-    }
-    return models.get(tier, models[2])
+    """Return LiteLLM model string for given tier.
+
+    Uses Claude Haiku for all tiers to ensure model availability.
+    Tier system is for heuristic complexity assessment, not for performance differentiation.
+    """
+    # Use Haiku for all tiers (confirmed working, fast, cost-effective)
+    return "anthropic/claude-haiku-4-5-20251001"
