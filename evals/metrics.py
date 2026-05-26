@@ -84,14 +84,26 @@ class LatencyBudgetMetric(Metric):
     def __init__(self, budget_ms: int) -> None:
         self.budget_ms = budget_ms
 
-    def evaluate(self, observation: dict) -> bool:
+    def evaluate(self, observation: dict) -> MetricResult:
         """
         Check if latency_ms <= budget_ms.
 
         observation: dict with 'latency_ms' key (from turn_observed event or similar)
+        Returns MetricResult with score 1.0 if within budget, 0.0 if not.
         """
         latency_ms = observation.get("latency_ms", float("inf"))
-        return latency_ms <= self.budget_ms
+        passed = latency_ms <= self.budget_ms
+        score = 1.0 if passed else 0.0
+        details = (
+            f"Latency {latency_ms:.1f}ms {'within' if passed else 'exceeds'} "
+            f"budget {self.budget_ms}ms"
+        )
+        return MetricResult(
+            name=f"LatencyBudget({self.budget_ms}ms)",
+            score=score,
+            passed=passed,
+            details=details,
+        )
 
 
 class CostBudgetMetric(Metric):
@@ -100,11 +112,23 @@ class CostBudgetMetric(Metric):
     def __init__(self, budget_usd: float) -> None:
         self.budget_usd = budget_usd
 
-    def evaluate(self, observation: dict) -> bool:
+    def evaluate(self, observation: dict) -> MetricResult:
         """
         Check if cost_usd <= budget_usd.
 
         observation: dict with 'cost_usd' key (from turn_observed event or similar)
+        Returns MetricResult with score 1.0 if within budget, 0.0 if not.
         """
         cost_usd = observation.get("cost_usd", float("inf"))
-        return cost_usd <= self.budget_usd
+        passed = cost_usd <= self.budget_usd
+        score = 1.0 if passed else 0.0
+        details = (
+            f"Cost ${cost_usd:.6f} {'within' if passed else 'exceeds'} "
+            f"budget ${self.budget_usd:.6f}"
+        )
+        return MetricResult(
+            name=f"CostBudget(${self.budget_usd})",
+            score=score,
+            passed=passed,
+            details=details,
+        )
