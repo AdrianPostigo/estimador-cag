@@ -38,8 +38,8 @@ DEFAULT_BACKEND_URL = "http://localhost:8000/api/v1"
 @click.option(
     "--scenarios",
     type=str,
-    default="growing,pivot,contradiction",
-    help="Comma-separated scenario names",
+    default="growing,pivoting,contradicting",
+    help="Comma-separated scenario names (growing, pivoting, contradicting)",
 )
 @click.option(
     "--attachment-sizes",
@@ -255,7 +255,7 @@ def run_stress_suite(
             writer.writeheader()
             writer.writerows(all_rows)
 
-        click.echo(f"✓ {len(all_rows)} rows written")
+        click.echo(f"OK {len(all_rows)} rows written")
     else:
         click.echo("No results to write", err=True)
 
