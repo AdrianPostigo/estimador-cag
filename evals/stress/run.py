@@ -137,7 +137,7 @@ def run_stress_suite(
                     data = response.json()
 
                     # Extract data
-                    output = data.get("output", {})
+                    estimation_output = data.get("output", {})
                     row = {
                         "scenario": scenario_name,
                         "repeat": repeat_idx + 1,
@@ -146,9 +146,9 @@ def run_stress_suite(
                         "tokens_out": data.get("tokens_out", 0),
                         "cost_usd": data.get("cost_usd", 0.0),
                         "latency_ms": data.get("latency_ms", 0.0),
-                        "project_name": output.get("project_name"),
-                        "tech_count": len(output.get("mentioned_technologies", [])),
-                        "summary_len": len(output.get("project_summary", "")),
+                        "project_name": estimation_output.get("project_name"),
+                        "tech_count": len(estimation_output.get("mentioned_technologies", [])),
+                        "summary_len": len(estimation_output.get("project_summary", "")),
                     }
 
                     all_rows.append(row)
@@ -207,7 +207,7 @@ def run_stress_suite(
             response.raise_for_status()
             data = response.json()
 
-            output = data.get("output", {})
+            estimation_output = data.get("output", {})
             row = {
                 "scenario": f"attachment_{size_kb}kb",
                 "repeat": 1,
@@ -216,9 +216,9 @@ def run_stress_suite(
                 "tokens_out": data.get("tokens_out", 0),
                 "cost_usd": data.get("cost_usd", 0.0),
                 "latency_ms": data.get("latency_ms", 0.0),
-                "project_name": output.get("project_name"),
-                "tech_count": len(output.get("mentioned_technologies", [])),
-                "summary_len": len(output.get("project_summary", "")),
+                "project_name": estimation_output.get("project_name"),
+                "tech_count": len(estimation_output.get("mentioned_technologies", [])),
+                "summary_len": len(estimation_output.get("project_summary", "")),
             }
 
             all_rows.append(row)
