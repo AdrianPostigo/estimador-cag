@@ -149,9 +149,13 @@ ATTACHMENT_SIZES = {
 }
 
 
-def get_attachment_pdf(size_label: str) -> Tuple[bytes, str]:
+def get_attachment_pdf(size_label: str, prefer_fixtures: bool = True) -> Tuple[bytes, str]:
     """
     Get synthetic PDF bytes for a size label.
+
+    Args:
+        size_label: Key in ATTACHMENT_SIZES dict
+        prefer_fixtures: If True, try to load from fixtures/ directory first
 
     Returns: (pdf_bytes, description)
     """
@@ -163,6 +167,18 @@ def get_attachment_pdf(size_label: str) -> Tuple[bytes, str]:
     if size_kb == 0:
         return b"", "no_attachment"
 
+    # Try to load from fixtures if prefer_fixtures=True
+    if prefer_fixtures:
+        from pathlib import Path
+        fixtures_dir = Path(__file__).parent / "fixtures"
+        fixture_file = fixtures_dir / f"attach_{size_kb}kb.pdf"
+
+        if fixture_file.exists():
+            with open(fixture_file, "rb") as f:
+                pdf_bytes = f.read()
+            return pdf_bytes, f"fixture_{size_kb}kb"
+
+    # Fall back to dynamic generation
     pdf_bytes = generate_pdf_bytes(size_kb)
     actual_size_kb = len(pdf_bytes) / 1024
 
