@@ -126,7 +126,7 @@ def run_stress_suite(
                     response = client.post(
                         f"{backend_url}/sessions/{session_id}/estimate",
                         data={
-                            "description": description,
+                            "description": description.strip(),
                             "project_type": "web_saas",
                             "detail_level": "medium",
                             "output_format": "phases_table",
@@ -198,7 +198,7 @@ def run_stress_suite(
 
             # Call with attachment
             files = {
-                "description": (None, baseline_description),
+                "description": (None, baseline_description.strip()),
                 "project_type": (None, "web_saas"),
                 "detail_level": (None, "medium"),
                 "output_format": (None, "phases_table"),
