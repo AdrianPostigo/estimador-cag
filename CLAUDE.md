@@ -74,6 +74,9 @@ evals/
     scenarios.py                 # Synthetic multi-turn scenarios: growing, pivoting, contradicting profiles
     runner.py                    # CLI runner for stress scenarios (measures metadata drift)
     README.md                    # Scenario definitions and metrics
+    attachments.py               # Generate synthetic PDFs of calibrated sizes (0, 5, 20, 50, 100 KB)
+    attachment_runner.py         # CLI runner for attachment stress (measures latency, cost, recall curves)
+    ATTACHMENTS.md               # Attachment stress test metrics and interpretation
 tests/
   test_sessions.py               # 3 integration tests: two-turn metadata, PDF attachment, sliding window cap
   prompts/
