@@ -66,6 +66,14 @@ app/
       examples.j2                # Few-shot JSON examples included via {% include %}
 frontend/
   streamlit_app.py               # Form UI: session management, file uploader, sidebar metadata, Nueva conversación
+evals/
+  golden_dataset.json            # 16 golden cases with expected_keys, cost_bounds
+  metrics.py                     # SchemaAdherenceMetric, CostBoundsMetric, ContentRecallMetric
+  runner.py                      # CLI runner for golden dataset evals
+  stress/
+    scenarios.py                 # Synthetic multi-turn scenarios: growing, pivoting, contradicting profiles
+    runner.py                    # CLI runner for stress scenarios (measures metadata drift)
+    README.md                    # Scenario definitions and metrics
 tests/
   test_sessions.py               # 3 integration tests: two-turn metadata, PDF attachment, sliding window cap
   prompts/
