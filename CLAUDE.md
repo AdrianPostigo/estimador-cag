@@ -79,6 +79,8 @@ evals/
     attachment_runner.py         # CLI runner for attachment stress (measures latency, cost, recall curves)
     ATTACHMENTS.md               # Attachment stress test metrics and interpretation
     metrics.py                   # MemoryDriftMetric, AttachmentRecallMetric, MetadataCoherenceMetric
+    run.py                       # Orchestrator: runs scenarios + attachments, generates CSV + REPORT.md
+    RUN.md                       # Usage guide for stress test runner
 tests/
   test_sessions.py               # 3 integration tests: two-turn metadata, PDF attachment, sliding window cap
   prompts/
