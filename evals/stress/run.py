@@ -250,7 +250,7 @@ def run_stress_suite(
     click.echo(f"Writing results to {output}...")
 
     if all_rows:
-        with open(output, "w", newline="") as f:
+        with open(output, "w", newline="", encoding="utf-8") as f:
             writer = csv.DictWriter(f, fieldnames=all_rows[0].keys())
             writer.writeheader()
             writer.writerows(all_rows)
@@ -377,10 +377,10 @@ def _generate_report(rows: list[dict], csv_path: str) -> None:
 
     report_content = "\n".join(lines)
 
-    with open(report_path, "w") as f:
+    with open(report_path, "w", encoding="utf-8") as f:
         f.write(report_content)
 
-    click.echo(f"✓ Report written to {report_path}")
+    click.echo(f"OK Report written to {report_path}")
 
 
 if __name__ == "__main__":
