@@ -210,6 +210,19 @@ def stream_with_history(messages: list[dict], model_name: str | None = None) -> 
         guardrail_passed=guardrail.passed,
     )
 
+    # Capture metrics for EstimationService to retrieve
+    try:
+        from app.services.estimation_service import capture_llm_metrics
+        capture_llm_metrics({
+            "tokens_in": input_tokens or 0,
+            "tokens_out": output_tokens or 0,
+            "cost_usd": cost_usd,
+            "latency_ms": latency_ms,
+            "cache_hit_kind": "none",
+        })
+    except ImportError:
+        pass  # estimation_service not imported yet
+
 
 def estimate_project(system_prompt: str, user_prompt: str) -> str:
     return "".join(
