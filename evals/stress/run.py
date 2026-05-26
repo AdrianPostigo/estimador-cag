@@ -98,7 +98,7 @@ def run_stress_suite(
     click.echo("PHASE 1: SCENARIO STRESS TESTS")
     click.echo("=" * 100 + "\n")
 
-    client = httpx.Client(timeout=120.0)
+    client = httpx.Client(timeout=180.0)
 
     for scenario_name in scenario_names:
         if scenario_name not in SCENARIOS:
@@ -134,19 +134,24 @@ def run_stress_suite(
                         files={"attachment": ("", b"")},
                     )
                     response.raise_for_status()
-                    data = response.json()
 
-                    # Extract data
+                    # Get turn observables from debug endpoint
+                    debug_response = client.get(f"{backend_url}/sessions/{session_id}")
+                    debug_data = debug_response.json()
+                    turn_obs = debug_data.get("last_turn_observables", {})
+
+                    # Extract data from response
+                    data = response.json()
                     estimation_output = data.get("output", {})
                     row = {
                         "scenario": scenario_name,
                         "repeat": repeat_idx + 1,
                         "turn": turn_idx,
-                        "tokens_in": data.get("tokens_in", 0),
-                        "tokens_out": data.get("tokens_out", 0),
-                        "cost_usd": data.get("cost_usd", 0.0),
-                        "latency_ms": data.get("latency_ms", 0.0),
-                        "project_name": estimation_output.get("project_name"),
+                        "tokens_in": turn_obs.get("tokens_in", 0),
+                        "tokens_out": turn_obs.get("tokens_out", 0),
+                        "cost_usd": turn_obs.get("cost_usd", 0.0),
+                        "latency_ms": turn_obs.get("latency_ms", 0.0),
+                        "project_name": estimation_output.get("project_name", ""),
                         "tech_count": len(estimation_output.get("mentioned_technologies", [])),
                         "summary_len": len(estimation_output.get("project_summary", "")),
                     }
@@ -205,18 +210,24 @@ def run_stress_suite(
                 files=files,
             )
             response.raise_for_status()
-            data = response.json()
 
+            # Get turn observables from debug endpoint
+            debug_response = client.get(f"{backend_url}/sessions/{session_id}")
+            debug_data = debug_response.json()
+            turn_obs = debug_data.get("last_turn_observables", {})
+
+            # Extract data from response
+            data = response.json()
             estimation_output = data.get("output", {})
             row = {
                 "scenario": f"attachment_{size_kb}kb",
                 "repeat": 1,
                 "turn": 1,
-                "tokens_in": data.get("tokens_in", 0),
-                "tokens_out": data.get("tokens_out", 0),
-                "cost_usd": data.get("cost_usd", 0.0),
-                "latency_ms": data.get("latency_ms", 0.0),
-                "project_name": estimation_output.get("project_name"),
+                "tokens_in": turn_obs.get("tokens_in", 0),
+                "tokens_out": turn_obs.get("tokens_out", 0),
+                "cost_usd": turn_obs.get("cost_usd", 0.0),
+                "latency_ms": turn_obs.get("latency_ms", 0.0),
+                "project_name": estimation_output.get("project_name", ""),
                 "tech_count": len(estimation_output.get("mentioned_technologies", [])),
                 "summary_len": len(estimation_output.get("project_summary", "")),
             }

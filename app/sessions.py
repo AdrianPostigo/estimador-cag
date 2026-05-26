@@ -71,6 +71,7 @@ class Session:
         # Observables
         self.last_resolved_tier: int | None = None
         self.last_tier_rule: str | None = None
+        self.last_turn_observables: dict | None = None  # Latest turn metrics
 
     @property
     def anchors_count(self) -> int:

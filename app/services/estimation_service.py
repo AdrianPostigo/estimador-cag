@@ -150,6 +150,10 @@ def estimate_conversational(
         last_tier_rule=session.last_tier_rule,
     )
 
+    # Store observables in session for later retrieval via debug endpoint
+    from dataclasses import asdict
+    session.last_turn_observables = asdict(observables)
+
     # Emit unified turn_observed event
     logger.info(
         "turn_observed",

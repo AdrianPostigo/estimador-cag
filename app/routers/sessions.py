@@ -27,6 +27,7 @@ class SessionDebugResponse(BaseModel):
     summary_chars: int
     last_resolved_tier: int | None
     last_tier_rule: str | None
+    last_turn_observables: dict | None = None  # Latest turn metrics
 
 
 @router.post("/sessions", response_model=CreateSessionResponse)
@@ -37,7 +38,7 @@ def create_session_endpoint() -> CreateSessionResponse:
 
 @router.get("/sessions/{session_id}", response_model=SessionDebugResponse)
 def get_session_debug(session_id: str) -> SessionDebugResponse:
-    """Debug endpoint exposing internal session observables."""
+    """Debug endpoint exposing internal session observables including latest turn metrics."""
     session = get_session(session_id)
     if session is None:
         raise HTTPException(status_code=404, detail="Session not found")
@@ -50,6 +51,7 @@ def get_session_debug(session_id: str) -> SessionDebugResponse:
         summary_chars=len(summary_text),
         last_resolved_tier=session.last_resolved_tier,
         last_tier_rule=session.last_tier_rule,
+        last_turn_observables=session.last_turn_observables,
     )
 
 
