@@ -1,6 +1,16 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 
 from app.schemas import EstimationOutput
+
+
+@dataclass
+class MetricResult:
+    """Result of evaluating a metric."""
+    name: str
+    score: float  # 0.0 to 1.0
+    passed: bool  # score >= 0.5
+    details: str  # human-readable explanation
 
 
 class Metric(ABC):
@@ -66,3 +76,35 @@ class ContentRecallMetric(Metric):
         # Need at least 70% of expected keys mentioned
         threshold = len(expected_keys) * 0.7
         return matched >= threshold
+
+
+class LatencyBudgetMetric(Metric):
+    """Validates that latency_ms stays within a budget."""
+
+    def __init__(self, budget_ms: int) -> None:
+        self.budget_ms = budget_ms
+
+    def evaluate(self, observation: dict) -> bool:
+        """
+        Check if latency_ms <= budget_ms.
+
+        observation: dict with 'latency_ms' key (from turn_observed event or similar)
+        """
+        latency_ms = observation.get("latency_ms", float("inf"))
+        return latency_ms <= self.budget_ms
+
+
+class CostBudgetMetric(Metric):
+    """Validates that cost_usd stays within a budget."""
+
+    def __init__(self, budget_usd: float) -> None:
+        self.budget_usd = budget_usd
+
+    def evaluate(self, observation: dict) -> bool:
+        """
+        Check if cost_usd <= budget_usd.
+
+        observation: dict with 'cost_usd' key (from turn_observed event or similar)
+        """
+        cost_usd = observation.get("cost_usd", float("inf"))
+        return cost_usd <= self.budget_usd

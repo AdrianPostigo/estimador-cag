@@ -68,7 +68,8 @@ frontend/
   streamlit_app.py               # Form UI: session management, file uploader, sidebar metadata, Nueva conversación
 evals/
   golden_dataset.json            # 16 golden cases with expected_keys, cost_bounds
-  metrics.py                     # SchemaAdherenceMetric, CostBoundsMetric, ContentRecallMetric
+  metrics.py                     # SchemaAdherence, CostBounds, ContentRecall, LatencyBudget, CostBudget
+  METRICS.md                     # Metrics architecture: two-tier system, justification, usage patterns
   runner.py                      # CLI runner for golden dataset evals
   stress/
     scenarios.py                 # Synthetic multi-turn scenarios: growing, pivoting, contradicting profiles
@@ -77,6 +78,7 @@ evals/
     attachments.py               # Generate synthetic PDFs of calibrated sizes (0, 5, 20, 50, 100 KB)
     attachment_runner.py         # CLI runner for attachment stress (measures latency, cost, recall curves)
     ATTACHMENTS.md               # Attachment stress test metrics and interpretation
+    metrics.py                   # MemoryDriftMetric, AttachmentRecallMetric, MetadataCoherenceMetric
 tests/
   test_sessions.py               # 3 integration tests: two-turn metadata, PDF attachment, sliding window cap
   prompts/
