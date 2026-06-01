@@ -1,0 +1,728 @@
+[
+  {
+    "budget_id": "BG-2023-001",
+    "client_metadata": {
+      "name": "TechCorp Inc",
+      "industry": "SaaS"
+    },
+    "project_summary": "E-commerce platform with real-time inventory management",
+    "main_technology": "React + Node.js",
+    "year": 2023,
+    "total_estimated_hours": 480,
+    "components": [
+      {
+        "component_id": "comp-001-auth",
+        "name": "Authentication & Authorization",
+        "description": "User login, JWT tokens, role-based access control",
+        "tech_stack": ["Node.js", "JWT", "PostgreSQL"],
+        "estimated_hours": 80,
+        "complexity": "medium",
+        "dependencies": ["PostgreSQL"]
+      },
+      {
+        "component_id": "comp-001-inventory",
+        "name": "Real-time Inventory Management",
+        "description": "Stock tracking, updates, alerts via WebSocket",
+        "tech_stack": ["Node.js", "WebSocket", "Redis"],
+        "estimated_hours": 120,
+        "complexity": "high",
+        "dependencies": ["Authentication", "PostgreSQL", "Redis"]
+      },
+      {
+        "component_id": "comp-001-ui",
+        "name": "Frontend Dashboard",
+        "description": "React SPA with charts, filters, real-time updates",
+        "tech_stack": ["React", "D3.js", "Redux"],
+        "estimated_hours": 160,
+        "complexity": "medium",
+        "dependencies": ["API"]
+      },
+      {
+        "component_id": "comp-001-api",
+        "name": "REST API",
+        "description": "Product, order, inventory endpoints",
+        "tech_stack": ["Node.js", "Express", "PostgreSQL"],
+        "estimated_hours": 120,
+        "complexity": "medium",
+        "dependencies": ["Authentication"]
+      }
+    ]
+  },
+  {
+    "budget_id": "BG-2023-002",
+    "client_metadata": {
+      "name": "FinanceFlow Ltd",
+      "industry": "Financial Services"
+    },
+    "project_summary": "Mobile banking app with transaction history and transfers",
+    "main_technology": "React Native",
+    "year": 2023,
+    "total_estimated_hours": 320,
+    "components": [
+      {
+        "component_id": "comp-002-mobile-ui",
+        "name": "Mobile UI Components",
+        "description": "Account view, transaction list, transfer form",
+        "tech_stack": ["React Native", "Redux"],
+        "estimated_hours": 100,
+        "complexity": "medium",
+        "dependencies": ["API"]
+      },
+      {
+        "component_id": "comp-002-secure-auth",
+        "name": "Secure Authentication",
+        "description": "Biometric login, PIN, session management",
+        "tech_stack": ["React Native", "JWT", "Keychain"],
+        "estimated_hours": 80,
+        "complexity": "high",
+        "dependencies": []
+      },
+      {
+        "component_id": "comp-002-backend-api",
+        "name": "Backend API & Database",
+        "description": "Transaction processing, account balance, transfer logic",
+        "tech_stack": ["Python", "Flask", "PostgreSQL"],
+        "estimated_hours": 140,
+        "complexity": "high",
+        "dependencies": ["Secure Authentication"]
+      }
+    ]
+  },
+  {
+    "budget_id": "BG-2023-003",
+    "client_metadata": {
+      "name": "HealthPro Systems",
+      "industry": "Healthcare"
+    },
+    "project_summary": "Patient records management system with compliance reporting",
+    "main_technology": "Java + Vue.js",
+    "year": 2023,
+    "total_estimated_hours": 560,
+    "components": [
+      {
+        "component_id": "comp-003-records-db",
+        "name": "Patient Records Database",
+        "description": "HIPAA-compliant data storage, encryption",
+        "tech_stack": ["PostgreSQL", "Java"],
+        "estimated_hours": 120,
+        "complexity": "high",
+        "dependencies": []
+      },
+      {
+        "component_id": "comp-003-hl7-integration",
+        "name": "HL7 & FHIR Integration",
+        "description": "Import/export medical records, third-party EHR sync",
+        "tech_stack": ["Java", "HL7", "FHIR"],
+        "estimated_hours": 160,
+        "complexity": "high",
+        "dependencies": ["Patient Records Database"]
+      },
+      {
+        "component_id": "comp-003-ui-dashboard",
+        "name": "Provider Dashboard",
+        "description": "Vue.js UI for viewing/updating patient records",
+        "tech_stack": ["Vue.js", "Bootstrap"],
+        "estimated_hours": 140,
+        "complexity": "medium",
+        "dependencies": ["Records Backend"]
+      },
+      {
+        "component_id": "comp-003-compliance",
+        "name": "Audit & Compliance Reporting",
+        "description": "Access logs, compliance reports, data export",
+        "tech_stack": ["Java", "PostgreSQL"],
+        "estimated_hours": 140,
+        "complexity": "medium",
+        "dependencies": ["Patient Records Database"]
+      }
+    ]
+  },
+  {
+    "budget_id": "BG-2023-004",
+    "client_metadata": {
+      "name": "RetailMax Group",
+      "industry": "Retail"
+    },
+    "project_summary": "Point of Sale system with inventory sync",
+    "main_technology": "C# + WinForms",
+    "year": 2023,
+    "total_estimated_hours": 280,
+    "components": [
+      {
+        "component_id": "comp-004-pos-ui",
+        "name": "POS Terminal Interface",
+        "description": "Touchscreen checkout, barcode scanning",
+        "tech_stack": ["C#", "WinForms"],
+        "estimated_hours": 100,
+        "complexity": "medium",
+        "dependencies": ["Inventory Service"]
+      },
+      {
+        "component_id": "comp-004-payment",
+        "name": "Payment Processing",
+        "description": "Credit card, cash, gift card handling",
+        "tech_stack": ["C#", "Payment Gateway API"],
+        "estimated_hours": 80,
+        "complexity": "high",
+        "dependencies": []
+      },
+      {
+        "component_id": "comp-004-inventory",
+        "name": "Inventory Service",
+        "description": "Real-time stock sync with backend",
+        "tech_stack": ["C#", "SQL Server"],
+        "estimated_hours": 100,
+        "complexity": "medium",
+        "dependencies": []
+      }
+    ]
+  },
+  {
+    "budget_id": "BG-2024-005",
+    "client_metadata": {
+      "name": "DataViz Analytics",
+      "industry": "Business Intelligence"
+    },
+    "project_summary": "Data visualization dashboard with ML-powered insights",
+    "main_technology": "Python + D3.js",
+    "year": 2024,
+    "total_estimated_hours": 400,
+    "components": [
+      {
+        "component_id": "comp-005-data-ingestion",
+        "name": "Data Ingestion Pipeline",
+        "description": "Connect multiple data sources, ETL process",
+        "tech_stack": ["Python", "Pandas", "SQLAlchemy"],
+        "estimated_hours": 120,
+        "complexity": "high",
+        "dependencies": []
+      },
+      {
+        "component_id": "comp-005-ml-models",
+        "name": "ML Analytics Engine",
+        "description": "Forecasting, anomaly detection, clustering",
+        "tech_stack": ["Python", "Scikit-learn", "TensorFlow"],
+        "estimated_hours": 160,
+        "complexity": "high",
+        "dependencies": ["Data Ingestion Pipeline"]
+      },
+      {
+        "component_id": "comp-005-visualization",
+        "name": "Interactive Dashboards",
+        "description": "D3.js charts, filters, drill-down capabilities",
+        "tech_stack": ["D3.js", "Vue.js"],
+        "estimated_hours": 120,
+        "complexity": "medium",
+        "dependencies": ["ML Models"]
+      }
+    ]
+  },
+  {
+    "budget_id": "BG-2024-006",
+    "client_metadata": {
+      "name": "CloudMigration Co",
+      "industry": "Cloud Infrastructure"
+    },
+    "project_summary": "Kubernetes cluster management UI",
+    "main_technology": "Go + React",
+    "year": 2024,
+    "total_estimated_hours": 350,
+    "components": [
+      {
+        "component_id": "comp-006-k8s-api",
+        "name": "Kubernetes API Wrapper",
+        "description": "Go service wrapping K8s API, custom logic",
+        "tech_stack": ["Go", "Kubernetes SDK"],
+        "estimated_hours": 100,
+        "complexity": "high",
+        "dependencies": []
+      },
+      {
+        "component_id": "comp-006-monitoring",
+        "name": "Monitoring & Alerting",
+        "description": "Prometheus integration, health checks",
+        "tech_stack": ["Go", "Prometheus"],
+        "estimated_hours": 80,
+        "complexity": "medium",
+        "dependencies": ["K8s API"]
+      },
+      {
+        "component_id": "comp-006-ui",
+        "name": "Web Console UI",
+        "description": "Cluster overview, pod management, logs viewer",
+        "tech_stack": ["React", "WebSocket"],
+        "estimated_hours": 120,
+        "complexity": "medium",
+        "dependencies": ["K8s API", "Monitoring"]
+      },
+      {
+        "component_id": "comp-006-rbac",
+        "name": "RBAC & Security",
+        "description": "Role-based access, audit logging",
+        "tech_stack": ["Go"],
+        "estimated_hours": 50,
+        "complexity": "high",
+        "dependencies": []
+      }
+    ]
+  },
+  {
+    "budget_id": "BG-2024-007",
+    "client_metadata": {
+      "name": "EdTech Academy",
+      "industry": "Education"
+    },
+    "project_summary": "Online learning platform with video streaming and quizzes",
+    "main_technology": "Django + Vue.js",
+    "year": 2024,
+    "total_estimated_hours": 480,
+    "components": [
+      {
+        "component_id": "comp-007-video-platform",
+        "name": "Video Streaming Service",
+        "description": "HLS/DASH streaming, adaptive bitrate, CDN",
+        "tech_stack": ["Django", "FFmpeg", "S3"],
+        "estimated_hours": 140,
+        "complexity": "high",
+        "dependencies": []
+      },
+      {
+        "component_id": "comp-007-course-management",
+        "name": "Course Management System",
+        "description": "Create/edit courses, lessons, resources",
+        "tech_stack": ["Django", "PostgreSQL"],
+        "estimated_hours": 100,
+        "complexity": "medium",
+        "dependencies": []
+      },
+      {
+        "component_id": "comp-007-quiz-engine",
+        "name": "Quiz & Assessment Engine",
+        "description": "Question types, auto-grading, progress tracking",
+        "tech_stack": ["Django", "Vue.js"],
+        "estimated_hours": 120,
+        "complexity": "medium",
+        "dependencies": ["Course Management"]
+      },
+      {
+        "component_id": "comp-007-student-portal",
+        "name": "Student Portal UI",
+        "description": "Enrollment, progress, certificates",
+        "tech_stack": ["Vue.js", "Bootstrap"],
+        "estimated_hours": 120,
+        "complexity": "low",
+        "dependencies": ["API"]
+      }
+    ]
+  },
+  {
+    "budget_id": "BG-2024-008",
+    "client_metadata": {
+      "name": "LogisticsHub Inc",
+      "industry": "Logistics"
+    },
+    "project_summary": "Fleet tracking and route optimization system",
+    "main_technology": "Node.js + React",
+    "year": 2024,
+    "total_estimated_hours": 520,
+    "components": [
+      {
+        "component_id": "comp-008-gps-tracking",
+        "name": "GPS Tracking Service",
+        "description": "Real-time vehicle location, WebSocket updates",
+        "tech_stack": ["Node.js", "Redis", "MapBox API"],
+        "estimated_hours": 120,
+        "complexity": "high",
+        "dependencies": []
+      },
+      {
+        "component_id": "comp-008-route-optimization",
+        "name": "Route Optimization Engine",
+        "description": "TSP solver, traffic integration, cost optimization",
+        "tech_stack": ["Node.js", "OSRM", "Python"],
+        "estimated_hours": 160,
+        "complexity": "high",
+        "dependencies": ["GPS Tracking"]
+      },
+      {
+        "component_id": "comp-008-driver-app",
+        "name": "Driver Mobile App",
+        "description": "React Native app for navigation and delivery",
+        "tech_stack": ["React Native", "Maps SDK"],
+        "estimated_hours": 140,
+        "complexity": "medium",
+        "dependencies": ["GPS Tracking", "Route Optimization"]
+      },
+      {
+        "component_id": "comp-008-analytics",
+        "name": "Fleet Analytics Dashboard",
+        "description": "KPIs, fuel consumption, efficiency metrics",
+        "tech_stack": ["React", "Chart.js"],
+        "estimated_hours": 100,
+        "complexity": "medium",
+        "dependencies": ["Data backend"]
+      }
+    ]
+  },
+  {
+    "budget_id": "BG-2024-009",
+    "client_metadata": {
+      "name": "SecureDoc Ltd",
+      "industry": "Document Management"
+    },
+    "project_summary": "Document collaboration platform with encryption",
+    "main_technology": "Rust + WebAssembly",
+    "year": 2024,
+    "total_estimated_hours": 640,
+    "components": [
+      {
+        "component_id": "comp-009-encryption",
+        "name": "End-to-End Encryption Engine",
+        "description": "AES encryption, key management, secure sharing",
+        "tech_stack": ["Rust", "libsodium"],
+        "estimated_hours": 160,
+        "complexity": "high",
+        "dependencies": []
+      },
+      {
+        "component_id": "comp-009-collaboration",
+        "name": "Real-time Collaboration",
+        "description": "Operational transformation, conflict resolution",
+        "tech_stack": ["Rust", "WebSocket"],
+        "estimated_hours": 180,
+        "complexity": "high",
+        "dependencies": ["Encryption Engine"]
+      },
+      {
+        "component_id": "comp-009-web-ui",
+        "name": "Web Editor UI",
+        "description": "WASM-based editor, rich text support",
+        "tech_stack": ["WebAssembly", "TypeScript", "React"],
+        "estimated_hours": 180,
+        "complexity": "high",
+        "dependencies": ["Collaboration", "Encryption"]
+      },
+      {
+        "component_id": "comp-009-backend",
+        "name": "Backend Document Server",
+        "description": "Document storage, versioning, permissions",
+        "tech_stack": ["Rust", "PostgreSQL"],
+        "estimated_hours": 120,
+        "complexity": "medium",
+        "dependencies": ["Encryption"]
+      }
+    ]
+  },
+  {
+    "budget_id": "BG-2024-010",
+    "client_metadata": {
+      "name": "SmartCity Solutions",
+      "industry": "IoT"
+    },
+    "project_summary": "IoT platform for urban sensing and management",
+    "main_technology": "Python + MQTT",
+    "year": 2024,
+    "total_estimated_hours": 600,
+    "components": [
+      {
+        "component_id": "comp-010-mqtt-broker",
+        "name": "MQTT Message Broker",
+        "description": "Sensor data ingestion, topic management",
+        "tech_stack": ["Python", "Mosquitto", "Redis"],
+        "estimated_hours": 100,
+        "complexity": "medium",
+        "dependencies": []
+      },
+      {
+        "component_id": "comp-010-time-series-db",
+        "name": "Time Series Database",
+        "description": "Store and query sensor metrics efficiently",
+        "tech_stack": ["InfluxDB", "Python"],
+        "estimated_hours": 120,
+        "complexity": "high",
+        "dependencies": ["MQTT Broker"]
+      },
+      {
+        "component_id": "comp-010-analytics",
+        "name": "Analytics & Anomaly Detection",
+        "description": "Pattern detection, predictions, alerting",
+        "tech_stack": ["Python", "Scikit-learn", "Spark"],
+        "estimated_hours": 150,
+        "complexity": "high",
+        "dependencies": ["Time Series DB"]
+      },
+      {
+        "component_id": "comp-010-visualization",
+        "name": "City Dashboard",
+        "description": "Real-time maps, sensor status, metrics",
+        "tech_stack": ["React", "Mapbox", "D3.js"],
+        "estimated_hours": 130,
+        "complexity": "medium",
+        "dependencies": ["Analytics"]
+      },
+      {
+        "component_id": "comp-010-mobile",
+        "name": "Mobile Alert App",
+        "description": "Push notifications for anomalies, status updates",
+        "tech_stack": ["React Native", "FCM"],
+        "estimated_hours": 100,
+        "complexity": "low",
+        "dependencies": ["Analytics"]
+      }
+    ]
+  },
+  {
+    "budget_id": "BG-2023-011",
+    "client_metadata": {
+      "name": "MediaFlow Studios",
+      "industry": "Media & Entertainment"
+    },
+    "project_summary": "Video content management and publishing platform",
+    "main_technology": "Go + Vue.js",
+    "year": 2023,
+    "total_estimated_hours": 420,
+    "components": [
+      {
+        "component_id": "comp-011-upload-transcoding",
+        "name": "Video Upload & Transcoding",
+        "description": "Multi-format upload, background transcoding jobs",
+        "tech_stack": ["Go", "FFmpeg", "AWS SQS"],
+        "estimated_hours": 140,
+        "complexity": "high",
+        "dependencies": []
+      },
+      {
+        "component_id": "comp-011-metadata",
+        "name": "Content Metadata Management",
+        "description": "Titles, descriptions, tags, categorization",
+        "tech_stack": ["Go", "PostgreSQL", "Elasticsearch"],
+        "estimated_hours": 80,
+        "complexity": "medium",
+        "dependencies": []
+      },
+      {
+        "component_id": "comp-011-player",
+        "name": "Video Player & CDN",
+        "description": "Adaptive bitrate streaming, analytics",
+        "tech_stack": ["Video.js", "CloudFlare"],
+        "estimated_hours": 100,
+        "complexity": "medium",
+        "dependencies": ["Transcoding"]
+      },
+      {
+        "component_id": "comp-011-cms",
+        "name": "Content Management UI",
+        "description": "Vue.js interface for publishing workflow",
+        "tech_stack": ["Vue.js", "Vuetify"],
+        "estimated_hours": 100,
+        "complexity": "low",
+        "dependencies": ["Metadata API"]
+      }
+    ]
+  },
+  {
+    "budget_id": "BG-2023-012",
+    "client_metadata": {
+      "name": "HRFlow Technologies",
+      "industry": "Human Resources"
+    },
+    "project_summary": "Applicant tracking system with AI resume screening",
+    "main_technology": "Python + Angular",
+    "year": 2023,
+    "total_estimated_hours": 380,
+    "components": [
+      {
+        "component_id": "comp-012-ai-screening",
+        "name": "AI Resume Screening Engine",
+        "description": "NLP-based candidate ranking and filtering",
+        "tech_stack": ["Python", "spaCy", "TensorFlow"],
+        "estimated_hours": 140,
+        "complexity": "high",
+        "dependencies": []
+      },
+      {
+        "component_id": "comp-012-job-posting",
+        "name": "Job Posting Management",
+        "description": "Create, publish, track job openings",
+        "tech_stack": ["Django", "PostgreSQL"],
+        "estimated_hours": 80,
+        "complexity": "medium",
+        "dependencies": []
+      },
+      {
+        "component_id": "comp-012-candidate-portal",
+        "name": "Candidate Portal UI",
+        "description": "Angular application for candidate applications",
+        "tech_stack": ["Angular", "Bootstrap"],
+        "estimated_hours": 100,
+        "complexity": "medium",
+        "dependencies": ["API"]
+      },
+      {
+        "component_id": "comp-012-recruiter-dashboard",
+        "name": "Recruiter Dashboard",
+        "description": "Pipeline view, candidate evaluation, scheduling",
+        "tech_stack": ["Angular", "D3.js"],
+        "estimated_hours": 60,
+        "complexity": "low",
+        "dependencies": ["API"]
+      }
+    ]
+  },
+  {
+    "budget_id": "BG-2023-013",
+    "client_metadata": {
+      "name": "FitPro Gym Networks",
+      "industry": "Fitness"
+    },
+    "project_summary": "Gym membership and class booking platform",
+    "main_technology": "Swift + Node.js",
+    "year": 2023,
+    "total_estimated_hours": 340,
+    "components": [
+      {
+        "component_id": "comp-013-member-app",
+        "name": "Member Mobile App",
+        "description": "Class booking, profile, payment methods",
+        "tech_stack": ["Swift", "Firebase"],
+        "estimated_hours": 120,
+        "complexity": "medium",
+        "dependencies": ["API"]
+      },
+      {
+        "component_id": "comp-013-class-scheduling",
+        "name": "Class Scheduling Engine",
+        "description": "Capacity management, instructor assignment",
+        "tech_stack": ["Node.js", "PostgreSQL"],
+        "estimated_hours": 100,
+        "complexity": "medium",
+        "dependencies": []
+      },
+      {
+        "component_id": "comp-013-billing",
+        "name": "Billing & Payments",
+        "description": "Recurring subscriptions, payment processing",
+        "tech_stack": ["Node.js", "Stripe API"],
+        "estimated_hours": 80,
+        "complexity": "high",
+        "dependencies": ["Class Scheduling"]
+      },
+      {
+        "component_id": "comp-013-admin-panel",
+        "name": "Admin Management Console",
+        "description": "Staff management, gym analytics",
+        "tech_stack": ["React", "Node.js"],
+        "estimated_hours": 40,
+        "complexity": "low",
+        "dependencies": ["API"]
+      }
+    ]
+  },
+  {
+    "budget_id": "BG-2023-014",
+    "client_metadata": {
+      "name": "TravelNest Booking",
+      "industry": "Travel & Hospitality"
+    },
+    "project_summary": "Online hotel booking platform with recommendations",
+    "main_technology": "Java + React",
+    "year": 2023,
+    "total_estimated_hours": 500,
+    "components": [
+      {
+        "component_id": "comp-014-search-backend",
+        "name": "Hotel Search & Inventory",
+        "description": "Search index, availability, pricing",
+        "tech_stack": ["Java", "Elasticsearch", "PostgreSQL"],
+        "estimated_hours": 140,
+        "complexity": "high",
+        "dependencies": []
+      },
+      {
+        "component_id": "comp-014-recommendations",
+        "name": "Recommendation Engine",
+        "description": "Collaborative filtering, personalized suggestions",
+        "tech_stack": ["Java", "Redis"],
+        "estimated_hours": 120,
+        "complexity": "high",
+        "dependencies": ["Search Backend"]
+      },
+      {
+        "component_id": "comp-014-booking-checkout",
+        "name": "Booking & Checkout Flow",
+        "description": "Reservation, payment, confirmation",
+        "tech_stack": ["Java", "Payment Gateway"],
+        "estimated_hours": 100,
+        "complexity": "medium",
+        "dependencies": ["Search Backend"]
+      },
+      {
+        "component_id": "comp-014-web-ui",
+        "name": "Search & Booking UI",
+        "description": "React SPA for booking experience",
+        "tech_stack": ["React", "Redux"],
+        "estimated_hours": 140,
+        "complexity": "medium",
+        "dependencies": ["API"]
+      }
+    ]
+  },
+  {
+    "budget_id": "BG-2024-015",
+    "client_metadata": {
+      "name": "SupplyChain Global",
+      "industry": "Supply Chain"
+    },
+    "project_summary": "Blockchain-based supply chain transparency platform",
+    "main_technology": "Solidity + React",
+    "year": 2024,
+    "total_estimated_hours": 640,
+    "components": [
+      {
+        "component_id": "comp-015-smart-contracts",
+        "name": "Smart Contracts",
+        "description": "Track shipments, verify origins, payments",
+        "tech_stack": ["Solidity", "Ethereum"],
+        "estimated_hours": 160,
+        "complexity": "high",
+        "dependencies": []
+      },
+      {
+        "component_id": "comp-015-api-gateway",
+        "name": "Blockchain API Gateway",
+        "description": "Node.js service to interact with blockchain",
+        "tech_stack": ["Node.js", "Web3.js"],
+        "estimated_hours": 140,
+        "complexity": "high",
+        "dependencies": ["Smart Contracts"]
+      },
+      {
+        "component_id": "comp-015-dashboard",
+        "name": "Supply Chain Dashboard",
+        "description": "Track shipments, verify authenticity, analytics",
+        "tech_stack": ["React", "D3.js"],
+        "estimated_hours": 140,
+        "complexity": "medium",
+        "dependencies": ["API Gateway"]
+      },
+      {
+        "component_id": "comp-015-iot-integration",
+        "name": "IoT Data Integration",
+        "description": "Sensor data from shipments into blockchain",
+        "tech_stack": ["Node.js", "MQTT"],
+        "estimated_hours": 100,
+        "complexity": "medium",
+        "dependencies": ["Smart Contracts", "API Gateway"]
+      },
+      {
+        "component_id": "comp-015-compliance",
+        "name": "Compliance & Auditing",
+        "description": "Regulatory reporting, immutable audit logs",
+        "tech_stack": ["Solidity", "Node.js"],
+        "estimated_hours": 100,
+        "complexity": "high",
+        "dependencies": ["Smart Contracts"]
+      }
+    ]
+  }
+]
