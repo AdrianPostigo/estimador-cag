@@ -1,5 +1,28 @@
 [
   {
+    "budget_id": "BUD-2024-014",
+    "client_metadata": {
+      "name": "FintechCorp",
+      "sector": "finance",
+      "country": "ES"
+    },
+    "project_summary": "Mobile banking API with OAuth 2.0 authentication and PSD2 compliance",
+    "main_technology": "ruby_on_rails",
+    "year": 2024,
+    "total_estimated_hours": 480,
+    "components": [
+      {
+        "component_id": "AUTH-001",
+        "name": "OAuth 2.0 authentication backend",
+        "description": "Implementation of OAuth 2.0 flows (authorization code, refresh token) with JWT-based session management, multi-tenant token isolation, and rate limiting per client.",
+        "tech_stack": ["ruby_on_rails", "postgresql", "redis"],
+        "estimated_hours": 120,
+        "complexity": "high",
+        "dependencies": []
+      }
+    ]
+  },
+  {
     "budget_id": "BG-2023-001",
     "client_metadata": {
       "name": "TechCorp Inc",
