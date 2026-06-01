@@ -1,0 +1,2 @@
+# Generated PDF fixtures (deterministic, regenerate with build_pdfs.py)
+*.pdf

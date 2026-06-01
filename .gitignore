@@ -24,6 +24,10 @@ ENV/
 .env.*
 !.env.example
 
+# Local AI workspace context
+CLAUDE.md
+**/CLAUDE.md
+
 # Logs
 *.log
 logs/

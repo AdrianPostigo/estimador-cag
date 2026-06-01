@@ -1,0 +1,164 @@
+{
+  "cases": [
+    {
+      "id": "case_001",
+      "title": "Web SaaS - Task Management",
+      "description": "Necesitamos una plataforma SaaS para gestión de tareas de equipos remotos. Debe incluir autenticación de usuarios, dashboard de tareas, colaboración en tiempo real, notificaciones por email, y exportación a PDF. Stack recomendado: Django en backend, React en frontend, PostgreSQL para base de datos. Equipo estimado: 2-3 desarrolladores. Timeline: 8-12 semanas.",
+      "project_type": "web_saas",
+      "detail_level": "medium",
+      "output_format": "phases_table",
+      "expected_keys": ["django", "react", "postgresql", "equipo", "12 semanas"],
+      "cost_bounds": {"hours_min": 60, "hours_max": 240, "weeks_min": 2, "weeks_max": 14}
+    },
+    {
+      "id": "case_002",
+      "title": "Web SaaS - Analytics Dashboard",
+      "description": "Plataforma de analytics para startups. Tracking de eventos, visualización de datos, reportes automáticos, integración con Slack. Stack: FastAPI, Vue.js, MongoDB. Necesitamos 1-2 desarrolladores full-stack. Estimación inicial: 6-10 semanas. Incluye setup de infraestructura en AWS.",
+      "project_type": "web_saas",
+      "detail_level": "medium",
+      "output_format": "line_items",
+      "expected_keys": ["fastapi", "vue", "mongodb", "aws", "slack"],
+      "cost_bounds": {"hours_min": 80, "hours_max": 200, "weeks_min": 3, "weeks_max": 12}
+    },
+    {
+      "id": "case_003",
+      "title": "Mobile App - Fitness Tracker",
+      "description": "App móvil nativa (iOS + Android) para tracking de actividades físicas. Integración con sensores, mapas, estadísticas, comunidad social. Debe funcionar offline. Plataformas: Swift (iOS), Kotlin (Android). Equipo: 3-4 desarrolladores. Timeline: 4-6 meses.",
+      "project_type": "mobile_app",
+      "detail_level": "detailed",
+      "output_format": "phases_table",
+      "expected_keys": ["swift", "kotlin", "offline", "sensores", "social"],
+      "cost_bounds": {"hours_min": 200, "hours_max": 500, "weeks_min": 8, "weeks_max": 26}
+    },
+    {
+      "id": "case_004",
+      "title": "Mobile App - News App",
+      "description": "Aplicación para consumir noticias de fuentes RSS, con recomendaciones personalizadas. Tecnología: React Native. Necesita login, dark mode, offline reading, push notifications. Equipo pequeño: 1-2 desarrolladores. Estimación: 4-8 semanas.",
+      "project_type": "mobile_app",
+      "detail_level": "medium",
+      "output_format": "narrative",
+      "expected_keys": ["react native", "rss", "notificaciones", "personalizacion"],
+      "cost_bounds": {"hours_min": 80, "hours_max": 160, "weeks_min": 2, "weeks_max": 10}
+    },
+    {
+      "id": "case_005",
+      "title": "Internal Tool - Budget Tracker",
+      "description": "Herramienta interna para gestión de presupuestos departamentales. Interfaz simple, reportes, alertas cuando se supera presupuesto. Stack: Node.js + Express, Angular, MySQL. Usuarios: ~50 empleados internos. Estimación: 2-4 semanas, 1 desarrollador.",
+      "project_type": "internal_tool",
+      "detail_level": "summary",
+      "output_format": "line_items",
+      "expected_keys": ["node.js", "angular", "mysql", "presupuesto"],
+      "cost_bounds": {"hours_min": 40, "hours_max": 120, "weeks_min": 1, "weeks_max": 6}
+    },
+    {
+      "id": "case_006",
+      "title": "Internal Tool - Log Viewer",
+      "description": "Visor de logs centralizado para la infraestructura de producción. Búsqueda avanzada, filtrado, alertas. Backend: Go, Frontend: React, Base de datos: Elasticsearch. Equipo: 2 desarrolladores. Timeline: 6-8 semanas.",
+      "project_type": "internal_tool",
+      "detail_level": "medium",
+      "output_format": "phases_table",
+      "expected_keys": ["go", "react", "elasticsearch", "logs", "produccion"],
+      "cost_bounds": {"hours_min": 80, "hours_max": 200, "weeks_min": 3, "weeks_max": 10}
+    },
+    {
+      "id": "case_007",
+      "title": "Data Pipeline - ETL System",
+      "description": "Sistema ETL para procesar datos de múltiples fuentes (APIs, archivos CSV, bases de datos). Transformación y limpieza de datos, cargas diarias a data warehouse. Stack: Python con Airflow, Pandas, PostgreSQL. Equipo: 1-2 data engineers. Estimación: 8-12 semanas.",
+      "project_type": "data_pipeline",
+      "detail_level": "detailed",
+      "output_format": "phases_table",
+      "expected_keys": ["python", "airflow", "pandas", "etl", "warehouse"],
+      "cost_bounds": {"hours_min": 120, "hours_max": 280, "weeks_min": 4, "weeks_max": 15}
+    },
+    {
+      "id": "case_008",
+      "title": "Data Pipeline - ML Training",
+      "description": "Pipeline de entrenamiento de modelos ML para predicción. Ingesta de datos, feature engineering, entrenamiento diario, evaluación. Stack: Python, TensorFlow, MLflow, Kubernetes. Equipo: 2-3 data scientists/engineers. Timeline: 12-16 semanas.",
+      "project_type": "data_pipeline",
+      "detail_level": "detailed",
+      "output_format": "narrative",
+      "expected_keys": ["tensorflow", "mlflow", "kubernetes", "ml", "features"],
+      "cost_bounds": {"hours_min": 160, "hours_max": 400, "weeks_min": 6, "weeks_max": 20}
+    },
+    {
+      "id": "case_009",
+      "title": "Web SaaS - CRM Simple",
+      "description": "CRM básico para pequeñas empresas. Gestión de contactos, pipeline de ventas, reportes. Sin complejidad de integraciones. Stack: Next.js, TypeScript, Supabase. Equipo: 1-2 desarrolladores. Estimación: 8-12 semanas.",
+      "project_type": "web_saas",
+      "detail_level": "medium",
+      "output_format": "phases_table",
+      "expected_keys": ["next.js", "typescript", "supabase", "crm", "contactos"],
+      "cost_bounds": {"hours_min": 80, "hours_max": 200, "weeks_min": 3, "weeks_max": 14}
+    },
+    {
+      "id": "case_010",
+      "title": "Web SaaS - E-Learning Platform",
+      "description": "Plataforma de cursos online con videos, quizzes, certificados. Pagos con Stripe, streaming de video, foros de comunidad. Stack: Django REST API, Vue.js, PostgreSQL, S3 para videos. Equipo: 3 desarrolladores. Timeline: 12-16 semanas.",
+      "project_type": "web_saas",
+      "detail_level": "detailed",
+      "output_format": "phases_table",
+      "expected_keys": ["django", "vue", "stripe", "videos", "certificados"],
+      "cost_bounds": {"hours_min": 160, "hours_max": 320, "weeks_min": 4, "weeks_max": 18}
+    },
+    {
+      "id": "case_011",
+      "title": "Mobile App - Social Network",
+      "description": "Red social móvil con posts, mensajes directos, stories, notificaciones. Multiplataforma: iOS y Android con Flutter. Backend: Node.js + GraphQL. Equipo: 4-5 desarrolladores. Estimación: 16-20 semanas.",
+      "project_type": "mobile_app",
+      "detail_level": "detailed",
+      "output_format": "phases_table",
+      "expected_keys": ["flutter", "graphql", "node.js", "social", "mensajes"],
+      "cost_bounds": {"hours_min": 240, "hours_max": 600, "weeks_min": 10, "weeks_max": 24}
+    },
+    {
+      "id": "case_012",
+      "title": "Internal Tool - Test Runner",
+      "description": "Herramienta interna para orquestar y monitorear test suites. Integración con CI/CD, reportes visuales, notificaciones. Stack: Python Flask, React, PostgreSQL. Equipo: 1 desarrollador senior. Timeline: 4-6 semanas.",
+      "project_type": "internal_tool",
+      "detail_level": "medium",
+      "output_format": "line_items",
+      "expected_keys": ["flask", "react", "ci/cd", "testing", "reportes"],
+      "cost_bounds": {"hours_min": 60, "hours_max": 160, "weeks_min": 2, "weeks_max": 8}
+    },
+    {
+      "id": "case_013",
+      "title": "Data Pipeline - Data Quality",
+      "description": "Sistema de validación y monitoreo de calidad de datos en data warehouse. Detecta outliers, valores faltantes, inconsistencias. Stack: Python, Great Expectations, Airflow, Alerting. Equipo: 1-2 data engineers. Estimación: 6-10 semanas.",
+      "project_type": "data_pipeline",
+      "detail_level": "medium",
+      "output_format": "phases_table",
+      "expected_keys": ["python", "great expectations", "airflow", "validacion", "alertas"],
+      "cost_bounds": {"hours_min": 80, "hours_max": 240, "weeks_min": 3, "weeks_max": 14}
+    },
+    {
+      "id": "case_014",
+      "title": "Web SaaS - Deployment Tool",
+      "description": "Herramienta SaaS para despliegues sin código. Click-based deployment, versioning, rollbacks. Stack: TypeScript, React, Node.js, Docker, Kubernetes. Equipo: 3-4 desarrolladores. Timeline: 14-18 semanas.",
+      "project_type": "web_saas",
+      "detail_level": "detailed",
+      "output_format": "phases_table",
+      "expected_keys": ["typescript", "docker", "kubernetes", "deployment", "rollback"],
+      "cost_bounds": {"hours_min": 200, "hours_max": 360, "weeks_min": 6, "weeks_max": 20}
+    },
+    {
+      "id": "case_015",
+      "title": "Mobile App - Game - Simple Puzzle",
+      "description": "Juego móvil simple de puzzles. Múltiples niveles, leaderboard, ads, compras in-app. Plataforma: Unity. Equipo: 1 game developer + 1 artist. Timeline: 8-12 semanas.",
+      "project_type": "mobile_app",
+      "detail_level": "medium",
+      "output_format": "narrative",
+      "expected_keys": ["unity", "gameplay", "leaderboard", "monetizacion"],
+      "cost_bounds": {"hours_min": 100, "hours_max": 240, "weeks_min": 4, "weeks_max": 14}
+    },
+    {
+      "id": "case_016",
+      "title": "Internal Tool - Deployment Dashboard",
+      "description": "Dashboard de monitoreo de despliegues y salud de servicios. Status de servidores, alertas, logs centralizados. Stack: Python, Prometheus, Grafana, ELK Stack. Equipo: 1-2 DevOps/SRE. Estimación: 6-8 semanas.",
+      "project_type": "internal_tool",
+      "detail_level": "medium",
+      "output_format": "phases_table",
+      "expected_keys": ["prometheus", "grafana", "elk", "deployment", "alertas"],
+      "cost_bounds": {"hours_min": 80, "hours_max": 200, "weeks_min": 3, "weeks_max": 10}
+    }
+  ]
+}
