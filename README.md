@@ -349,6 +349,137 @@ Revisa los logs del backend. Causas comunes:
 
 **Solución:** Ejecuta con `uv run` o asegúrate de que el `PYTHONPATH` incluye la raíz del proyecto.
 
+## Decisiones de Diseño — Schema de Persistencia (Sesión 08)
+
+### ¿Por qué dos tablas (`documents` + `chunks`) en lugar de una?
+
+**Decisión:** Mantener relación 1:N normalizada con FK CASCADE.
+
+**Justificación:** 
+- Un presupuesto ingestado genera N chunks (componentes). Una tabla única duplicaría metadatos del documento en cada fila, rompiendo integridad referencial.
+- Con dos tablas: eliminar un documento elimina automáticamente todos sus chunks vía `ON DELETE CASCADE`.
+- Consultas más eficientes: filtrar por document_id está indexado.
+
+**Trade-off:** Una tabla única sería más simple para pequeños volúmenes; dos tablas escala mejor.
+
+### ¿Por qué `metadata JSONB` en lugar de columnas tipadas?
+
+**Decisión:** Metadata estable (tipo de documento, tipo de chunk) en columnas; metadata variable (tags, tecnologías, scope) en JSONB.
+
+**Justificación:**
+- **Estable:** `document_type`, `chunk_type` son limitados y crecen lentamente → columnas tipadas con índices.
+- **Variable:** `technologies`, `scope`, `client_sector` enriquecen en ingesta y querying sin requerir DDL.
+- **Índices GIN:** Permiten queries arbitrarias (`WHERE metadata->>'sector' = 'fintech'`) sin migración de schema.
+- **Flexibilidad:** Nuevos campos en metadata no requieren ALTER TABLE.
+
+**Trade-off:** JSONB es más lento para queries simples vs columnas tipadas; ganancia en flexibilidad.
+
+### ¿Por qué `cosine_distance` y no L2 ni `inner_product`?
+
+**Decisión:** `Chunk.embedding.cosine_distance(query_vector)` para k-nearest neighbors.
+
+**Justificación:**
+- **Cosine:** Mide ángulo entre vectores (invariante a magnitud). Ideal para embeddings de texto donde magnitud no importa.
+- **L2:** Distancia euclidiana; sensible a magnitud. Menos natural para semántica.
+- **Inner product:** Más rápido pero require vectores normalizados y negativo para distancia.
+- **Corpus fintech:** Cosine captura bien "OAuth 2.0" ≈ "JWT" porque ambos están en dirección similar del espacio, independientemente de su longitud.
+
+**Trade-off:** Cosine es más interpretable; inner product sería ~5% más rápido si los vectores fuesen normalizados a priori.
+
+### ¿Por qué deliberadamente NO hay índice vectorial (HNSW/IVFFlat)?
+
+**Decisión:** Solo índices sobre columnas tipadas (`source_path`, `document_id`, `chunk_type`, `metadata` GIN). Sequential scan para k-NN.
+
+**Justificación:**
+- **Baseline measurement:** Primero medir el performance de sequential scan. Es el comportamiento de referencia.
+- **Sesión 08 scope:** El índice vectorial se agrega en sesión posterior (es un directo colaborativo).
+- **Understanding:** Sequential scan permite entender cómo pgvector maneja distance calculation sin capa de índice.
+- **Trade-off:** Sequential scan es O(N) para cada query; HNSW sería O(log N) pero con overhead de construcción/mantenimiento.
+
+**Próximo paso:** En sesión futura, medir impacto de HNSW en latency + índices filtrados (ej. `WHERE metadata->>'sector' = 'fintech'` THEN kNN).
+
+---
+
+## Endpoints de Búsqueda (Sesión 08)
+
+### POST /api/v1/embeddings/ingest
+
+Ingesta y persiste un presupuesto con sus embeddings.
+
+**Request:**
+```json
+{
+  "source_path": "data/budgets/budget_2024_q1.json",
+  "document_type": "historical_budget",
+  "content": { /* Budget JSON */ }
+}
+```
+
+**Response (200):**
+```json
+{
+  "document_id": 1,
+  "chunks_created": 17,
+  "embedding_dimension": 1536,
+  "ingestion_time_ms": 1240.5
+}
+```
+
+**Response (409 Conflict):**
+```json
+{
+  "detail": "Document already ingested"
+}
+```
+
+### POST /api/v1/embeddings/search
+
+Búsqueda semántica sobre chunks ingestados.
+
+**Request:**
+```json
+{
+  "query": "REST API with OAuth authentication for fintech sector",
+  "k": 5
+}
+```
+
+**Response (200):**
+```json
+{
+  "query": "REST API with OAuth authentication for fintech sector",
+  "k": 5,
+  "search_time_ms": 87.3,
+  "results": [
+    {
+      "chunk_id": 156,
+      "document_id": 12,
+      "chunk_type": "component",
+      "content": "Backend service implementation with JWT-based authentication...",
+      "distance": 0.1234,
+      "metadata": { "scope": "backend", "technologies": ["python", "fastapi"] }
+    }
+  ]
+}
+```
+
+### Script query_examples.py
+
+Prueba la búsqueda semántica con cinco queries representativas:
+
+```bash
+docker compose run --rm ai_service python scripts/query_examples.py
+```
+
+Ejercita:
+1. **Direct match** — Componente conocido (sanity check)
+2. **Semantic reformulation** — Mismo concepto, vocabulario distinto
+3. **Out-of-domain** — Query sobre algo no en el corpus
+4. **Ambiguous query** — Corta y genérica, múltiples matches parciales
+5. **Very specific** — Vocabulario técnico preciso
+
+Ver `output_examples.txt` para ejemplo de salida.
+
 ## Más Información
 
 - **CLAUDE.md:** Instrucciones detalladas para Claude Code (arquitectura, decisiones de diseño)
