@@ -89,3 +89,73 @@ class IngestResponse(BaseModel):
 
     chunks: list[EmbeddedChunk]
     stats: dict[str, int | float]
+
+
+# Session 08: Persistence-based ingestion
+class IngestBudgetRequest(BaseModel):
+    """Request to ingest a single budget and persist it to PostgreSQL."""
+
+    source_path: str = Field(
+        min_length=1,
+        description="Unique identifier for the budget (e.g., 'data/budgets/budget_2024_q1.json')",
+    )
+    document_type: str = Field(
+        min_length=1,
+        description="Classification of the document (e.g., 'historical_budget', 'estimate')",
+    )
+    content: dict[str, Any] = Field(
+        description="Complete Budget JSON (must validate as Budget model)",
+    )
+
+
+class IngestBudgetResponse(BaseModel):
+    """Response after persisting a budget and its chunks to PostgreSQL."""
+
+    document_id: int = Field(description="ID of created document in PostgreSQL")
+    chunks_created: int = Field(description="Number of chunks created for this budget")
+    embedding_dimension: int = Field(description="Dimensionality of embeddings (1536 for text-embedding-3-small)")
+    ingestion_time_ms: float = Field(description="Total ingestion time in milliseconds")
+
+
+class IngestBudgetConflictResponse(BaseModel):
+    """Response when attempting to ingest a budget with duplicate source_path."""
+
+    detail: str = Field(default="Document already ingested")
+    document_id: int = Field(description="ID of existing document with this source_path")
+
+
+# Session 08: Semantic search
+class SearchRequest(BaseModel):
+    """Request for semantic search over embedded chunks."""
+
+    query: str = Field(
+        min_length=1,
+        max_length=2000,
+        description="Search query (will be embedded with text-embedding-3-small)",
+    )
+    k: int = Field(
+        default=5,
+        ge=1,
+        le=100,
+        description="Number of nearest neighbors to return",
+    )
+
+
+class SearchResult(BaseModel):
+    """Single result from semantic search."""
+
+    chunk_id: int = Field(description="ID of chunk in PostgreSQL")
+    document_id: int = Field(description="ID of parent document")
+    chunk_type: str = Field(description="Type of chunk (e.g., 'component')")
+    content: str = Field(description="Text content of chunk")
+    distance: float = Field(description="Cosine distance (0=identical, 2=opposite)")
+    metadata: dict[str, Any] = Field(description="Metadata dict attached to chunk")
+
+
+class SearchResponse(BaseModel):
+    """Response with semantic search results."""
+
+    query: str = Field(description="Original query")
+    k: int = Field(description="Number of results requested")
+    search_time_ms: float = Field(description="Query execution time in milliseconds")
+    results: list[SearchResult] = Field(description="List of k nearest chunks")
