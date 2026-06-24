@@ -400,7 +400,7 @@ Revisa los logs del backend. Causas comunes:
 
 ---
 
-## Endpoints de Búsqueda (Sesión 08)
+## Endpoints de Búsqueda (Sesión 08-10)
 
 ### POST /api/v1/embeddings/ingest
 
@@ -432,35 +432,143 @@ Ingesta y persiste un presupuesto con sus embeddings.
 }
 ```
 
-### POST /api/v1/embeddings/search
+### POST /api/v1/embeddings/search (Hybrid Search ± Reranking)
 
-Búsqueda semántica sobre chunks ingestados.
+Búsqueda en tres modos (semantic, lexical, hybrid) con reranking opcional.
+
+**Patrón recall-then-rerank:**
+1. **Recall stage:** Retrieve top-reranker_k (default 50) — amplia cobertura
+2. **Rerank stage (opcional):** FlashRank cross-encoder reordena a top-k — relevancia fina
 
 **Request:**
 ```json
 {
   "query": "REST API with OAuth authentication for fintech sector",
-  "k": 5
+  "k": 5,
+  "search_mode": "hybrid",
+  "enable_reranking": true,
+  "reranker_k": 50
 }
 ```
 
-**Response (200):**
+**Parámetros:**
+- `search_mode`: `"semantic"` | `"lexical"` | `"hybrid"`
+- `enable_reranking`: `true` — Apply FlashRank (ms-marco-MiniLM-L-12-v2) | `false` — Direct retrieval
+- `reranker_k`: Número de docs a recuperar antes de reranking (min: 5, max: 200, default: 50)
+
+**Response (200) — sin reranking:**
 ```json
 {
-  "query": "REST API with OAuth authentication for fintech sector",
+  "query": "REST API with OAuth...",
   "k": 5,
-  "search_time_ms": 87.3,
+  "search_mode": "hybrid",
+  "enable_reranking": false,
+  "search_time_ms": 142.8,
+  "reranking_time_ms": 0.0,
   "results": [
     {
       "chunk_id": 156,
-      "document_id": 12,
+      "rank": 1,
+      "rrf_score": 0.0315,
+      "reranker_score": null,
       "chunk_type": "component",
       "content": "Backend service implementation with JWT-based authentication...",
-      "distance": 0.1234,
       "metadata": { "scope": "backend", "technologies": ["python", "fastapi"] }
     }
   ]
 }
+```
+
+**Response (200) — con reranking:**
+```json
+{
+  "query": "REST API with OAuth...",
+  "k": 5,
+  "search_mode": "hybrid",
+  "enable_reranking": true,
+  "search_time_ms": 142.8,
+  "reranking_time_ms": 18.5,
+  "results": [
+    {
+      "chunk_id": 156,
+      "rank": 1,
+      "rrf_score": 0.0315,
+      "reranker_score": 8.2,
+      "chunk_type": "component",
+      "content": "...",
+      "metadata": { ... }
+    }
+  ]
+}
+```
+
+**RRF Formula (Hybrid Fusion):**
+```
+RRF_score = 1/(60 + rank_semantic) + 1/(60 + rank_lexical)
+```
+
+**FlashRank (Cross-Encoder):**
+- Modelo: `ms-marco-MiniLM-L-12-v2` (entrenado en MS MARCO)
+- Score: 0-10 (10 = máxima relevancia)
+- Latencia: ~10-20ms para reranking
+- Patrón: Recupera 50 candidatos, reordena a top-5
+
+### Script compare_search_modes.py (Sesión 10)
+
+Compara tres modos de búsqueda (semantic, lexical, hybrid) sin reranking:
+
+```bash
+docker compose run --rm ai_service python scripts/compare_search_modes.py
+```
+
+Muestra cómo RRF fusion mejora recall vs búsquedas puras.
+
+**Modo de uso:**
+- **semantic:** Cuando la consulta describe conceptos (no palabras clave)
+- **lexical:** Cuando la consulta tiene palabras clave precisas (OAuth, PostgreSQL, etc.)
+- **hybrid:** Por defecto (mejor recall combinando ambos)
+
+### Script validate_reranking.py (Sesión 10)
+
+Valida efectividad del reranking (FlashRank) en el patrón recall-then-rerank:
+
+```bash
+docker compose run --rm ai_service python scripts/validate_reranking.py
+```
+
+**Compara:**
+1. Búsqueda hybrid SIN reranking (top-5 directo)
+2. Búsqueda hybrid CON reranking (retrieve 50, rerank a top-5)
+
+**Muestra:**
+- RRF scores vs FlashRank scores
+- Qué chunks se reordenan
+- Cambios en top-1
+- Latencia del reranking
+- Chunks nuevos promovidos a top-5
+
+**Ejemplo de output:**
+```
+WITHOUT RERANKING (Top-5 from hybrid fusion)
+Retrieval time: 142.8ms | Results: 5
+  [1] Chunk 156 | RRF Score: 0.0315
+      OAuth 2.0 authentication backend...
+  [2] Chunk 287 | RRF Score: 0.0298
+      JWT-based authorization service...
+
+WITH RERANKING (Recall-then-rerank: retrieve 50, rerank to 5)
+Retrieval time: 142.8ms | Reranking time: 18.5ms | Total: 161.3ms
+Results: 5
+  [1] Chunk 287 | FlashRank Score: 8.9
+      JWT-based authorization service...
+  [2] Chunk 156 | FlashRank Score: 8.5
+      OAuth 2.0 authentication backend...
+
+ANALYSIS
+  Ranking stability: 4/5 chunks in same position
+  Chunks reordered by reranker: 1/5
+  Top-1 changed: 156 → 287
+  Latency increase: 18.5ms for reranking stage
 ```
 
 ### Script query_examples.py
@@ -479,6 +587,82 @@ Ejercita:
 5. **Very specific** — Vocabulario técnico preciso
 
 Ver `output_examples.txt` para ejemplo de salida.
+
+## Evaluación de Búsqueda Híbrida + Reranking (Sesión 10)
+
+### Workflow de Evaluación
+
+```bash
+# 1. Explorar chunks existentes y testear golden queries
+docker compose run --rm ai_service python scripts/explore_chunks.py
+
+# Output: Top-50 resultados para cada query, listo para anotar manualmente
+
+# 2. Anotar golden_set_session_10.json con chunk IDs relevantes
+# Edit: evals/golden_set_session_10.json
+# Para cada query, llenar relevant_chunk_ids basado en explore_chunks.py
+
+# 3. Ejecutar evaluación de 4 configuraciones
+docker compose run --rm ai_service python scripts/evaluate_search_configs.py
+
+# Output: 
+# - Tabla comparativa (stdout)
+# - CSV: evals/search_evaluation_session_10.csv
+# - JSON detallado: evals/search_evaluation_session_10.json
+```
+
+### Configuraciones Evaluadas
+
+| Código | Search Mode | Reranking | Descripción |
+|--------|-------------|-----------|------------|
+| **A** | Semantic | No | Vector similarity (baseline) |
+| **B** | Hybrid | No | RRF fusion of semantic + lexical |
+| **C** | Semantic | Yes | Vector similarity + FlashRank reranking |
+| **D** | Hybrid | Yes | RRF + FlashRank reranking (best recall-then-rerank) |
+
+### Métricas
+
+- **Precisión@5 (P@5):** Porcentaje de top-5 que son realmente relevantes
+  ```
+  P@5 = (relevant chunks en top-5) / min(5, total relevant chunks)
+  ```
+- **Latencia (ms):** Tiempo total de búsqueda + reranking
+
+### Golden Set
+
+Archivo: `evals/golden_set_session_10.json`
+
+5 queries representativas del dominio, con `relevant_chunk_ids` anotados **a nivel de componente** (un chunk es relevante solo si su componente coincide con la intención de la query, no solo su presupuesto padre):
+1. **Q1:** REST API with OAuth (Fintech/Auth)
+2. **Q2:** E-commerce with payments (Retail)
+3. **Q3:** Data warehouse with ETL (Analytics)
+4. **Q4:** ML model deployment (ML/AI)
+5. **Q5:** Internal collaboration tool (Productivity)
+
+### Resultados (corpus: 60 chunks de 16 presupuestos)
+
+| Config | Búsqueda | Reranking | P@5 medio | Latencia media |
+|--------|----------|-----------|-----------|----------------|
+| **A** | Vectorial | No | **83.3%** | **323 ms** |
+| **B** | Híbrida (RRF) | No | 68.3% | 201 ms |
+| **C** | Vectorial | Sí (FlashRank) | 58.3% | 1164 ms |
+| **D** | Híbrida (RRF) | Sí (FlashRank) | 58.3% | 1091 ms |
+
+Desglose por query (P@5):
+
+| Query | A | B | C | D |
+|-------|-----|-----|-----|-----|
+| Q1 fintech auth | 100% | 100% | 100% | 100% |
+| Q2 e-commerce | 75% | 75% | 75% | 75% |
+| Q3 data/ETL | 75% | 50% | 25% | 25% |
+| Q4 ML deployment | 67% | 67% | 67% | 67% |
+| Q5 colaboración | 100% | 50% | 25% | 25% |
+
+El daño se concentra en **Q3 y Q5**: la rama léxica y el reranking degradan la precisión que la búsqueda vectorial ya resolvía bien.
+
+### Conclusiones
+
+**Usaríamos la Configuración A (búsqueda vectorial pura, sin reranking).** En este caso de uso concreto es la opción que gana en las dos métricas a la vez: máxima precisión (83.3% P@5) y mínima latencia (~323 ms). Cada capa de complejidad que añadimos —fusión léxica (RRF) y luego reranking— **empeora** la relevancia en lugar de mejorarla, y el reranking además multiplica la latencia por ~3.5×. **La ganancia de relevancia del reranking no existe aquí: es una pérdida, y encima cara.** Hay tres razones concretas que lo explican y que delimitan cuándo *sí* compensaría: (1) el contenido está en inglés pero la columna full-text usa configuración `spanish`, así que la rama léxica con términos en OR matchea palabras comunes ("real-time", "system", "management") e inyecta ruido; (2) el patrón recall-then-rerank no aporta cuando recuperas 50 candidatos de un corpus de solo 60 —el reranker reordena casi todo, sin que la recuperación filtre nada—, mientras que su valor real aparece al recuperar 50 de miles; y (3) el cross-encoder `ms-marco-MiniLM` optimiza una noción de relevancia web genérica, no "qué presupuesto sirve para estimar", de modo que promociona chunks textualmente parecidos pero ajenos al golden set. La lección no es "el reranking es malo", sino que **una técnica solo compensa si su supuesto de diseño se cumple**: reranking y búsqueda híbrida pagarían su coste sobre un corpus grande, con el idioma de FTS alineado al contenido y, idealmente, un reranker afín al dominio. Mientras el corpus sea pequeño y homogéneo, la simplicidad vectorial es la decisión correcta —y la mantendríamos hasta que el volumen de presupuestos crezca lo suficiente para volver a medir.
 
 ## Más Información
 

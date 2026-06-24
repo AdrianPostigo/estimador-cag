@@ -10,6 +10,7 @@ dependencies = [
     "asyncpg>=0.29",
     "click>=8.1.0",
     "fastapi>=0.136.1",
+    "flashrank>=0.2.0",
     "httpx>=0.28.0",
     "litellm>=1.83.14",
     "pgvector>=0.3",

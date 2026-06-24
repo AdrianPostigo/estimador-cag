@@ -2,8 +2,9 @@
 
 from datetime import datetime
 from pgvector.sqlalchemy import Vector
+import sqlalchemy as sa
 from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, String, Text, func
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB, TSVECTOR
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -19,7 +20,7 @@ class Document(Base):
     source_path = Column(Text, nullable=False, unique=True, index=True)
     document_type = Column(String(50), nullable=False)
     ingested_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    metadata = Column(JSONB, server_default="{}", nullable=False)
+    doc_metadata = Column(JSONB, server_default="{}", nullable=False)
 
     # Relationship
     chunks = relationship("Chunk", back_populates="document", cascade="all, delete-orphan")
@@ -37,8 +38,16 @@ class Chunk(Base):
     document_id = Column(BigInteger, ForeignKey("documents.id", ondelete="CASCADE"), nullable=False, index=True)
     chunk_type = Column(String(50), nullable=False, index=True)
     content = Column(Text, nullable=False)
+    content_fts = Column(
+        TSVECTOR,
+        sa.Computed(
+            "to_tsvector('spanish', content)",
+            persisted=True,
+        ),
+        nullable=False,
+    )
     embedding = Column(Vector(1536), nullable=True)
-    metadata = Column(JSONB, server_default="{}", nullable=False)
+    chunk_metadata = Column(JSONB, server_default="{}", nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     # Relationship

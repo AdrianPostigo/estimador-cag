@@ -5,8 +5,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_async_session
+from app.services.llm_service import LLMService
 from embedding_pipeline.persistence import DocumentRepository
 from embedding_pipeline.schemas import (
+    EstimateWithContextRequest,
+    EstimateWithContextResponse,
     IngestBudgetRequest,
     IngestBudgetResponse,
     SearchRequest,
@@ -118,27 +121,35 @@ async def search_chunks(
     session: AsyncSession = Depends(get_async_session),
 ) -> SearchResponse:
     """
-    Semantic search over indexed budget chunks.
+    Search over indexed budget chunks (semantic, lexical, hybrid, ±reranking).
 
-    Input: query (text to search for), k (number of results).
+    Input: query, k, search_mode, enable_reranking, reranker_k.
 
-    Processing:
-      1. Embed query with text-embedding-3-small
-      2. Execute k-nearest neighbors via cosine distance in PostgreSQL
-      3. Return k results sorted by distance (ascending = most similar)
+    Processing modes:
+      - 'semantic': Vector similarity (cosine distance)
+      - 'lexical': Full-text search (PostgreSQL tsvector + tsquery)
+      - 'hybrid': Reciprocal Rank Fusion (fuses both rankings)
 
-    Output: query, k, search_time_ms, results[] with metadata.
+    Recall-then-rerank pattern:
+      If enable_reranking=true:
+        1. Retrieve top-reranker_k (wide recall)
+        2. Apply FlashRank cross-encoder reranking to top-k
+
+    Output: query, k, search_mode, enable_reranking, search_time_ms, reranking_time_ms, results[].
 
     Status codes:
       - 200: Success (0+ results returned)
-      - 422: Validation error (query too short/long, k out of range)
-      - 500: Search error (OpenAI, database, etc.)
+      - 422: Validation error (query/k/search_mode invalid)
+      - 500: Search/reranking error (OpenAI, database, FlashRank, etc.)
     """
     try:
         repository = DocumentRepository(session)
-        result = await repository.search(
+        result = await repository.hybrid_search(
             query=request.query,
             k=request.k,
+            search_mode=request.search_mode,
+            enable_reranking=request.enable_reranking,
+            reranker_k=request.reranker_k,
         )
         return SearchResponse(**result)
 
@@ -153,7 +164,7 @@ async def search_chunks(
         )
 
     except Exception as e:
-        # OpenAI API errors, database errors, unexpected errors
+        # OpenAI API errors, database errors, FlashRank errors, unexpected errors
         logger.error(
             "search_failed",
             error_type=type(e).__name__,
@@ -162,4 +173,86 @@ async def search_chunks(
         raise HTTPException(
             status_code=500,
             detail="Failed to execute search. Check server logs for details.",
+        )
+
+
+@router.post(
+    "/estimate/with-context",
+    response_model=EstimateWithContextResponse,
+    status_code=200,
+    summary="Estimate with context from similar historical budgets",
+    tags=["embeddings"],
+    responses={
+        422: {"description": "Validation error (query, project_type, etc)"},
+        500: {"description": "Estimation error (LLM, database, etc)"},
+    },
+)
+async def estimate_with_context(
+    request: EstimateWithContextRequest,
+    session: AsyncSession = Depends(get_async_session),
+) -> EstimateWithContextResponse:
+    """
+    Generate project estimation with context from similar historical budgets.
+
+    Input: query (find similar budgets), search_k (how many), + estimation params.
+
+    Processing:
+      1. Retrieve top-k similar chunks via semantic search
+      2. Format chunks as context block
+      3. Inject context into LLM prompt
+      4. Generate estimation with informed context
+      5. Return: estimation + retrieval metrics + context chunks
+
+    Output: EstimationOutput + retrieval metrics + retrieved chunks.
+
+    This enables measuring how context improves estimation quality vs baseline /estimate.
+
+    Status codes:
+      - 200: Success (estimation generated with context)
+      - 422: Validation error (query too short/long, invalid project_type, etc)
+      - 500: Estimation error (LLM, database, search, etc)
+    """
+    try:
+        repository = DocumentRepository(session)
+        llm_service = LLMService()
+
+        estimation_input = {
+            "description": request.query,
+            "project_type": request.project_type,
+            "detail_level": request.detail_level,
+            "output_format": request.output_format,
+        }
+
+        result = await repository.estimate_with_context(
+            query=request.query,
+            search_k=request.search_k,
+            estimation_input=estimation_input,
+            llm_service=llm_service,
+        )
+
+        return EstimateWithContextResponse(
+            estimation=result["estimation"],
+            retrieval=result["retrieval"],
+            context_chunks=result["context_chunks"],
+        )
+
+    except ValueError as e:
+        logger.error(
+            "estimate_with_context_validation_error",
+            error_message=str(e),
+        )
+        raise HTTPException(
+            status_code=422,
+            detail=f"Validation error: {str(e)}",
+        )
+
+    except Exception as e:
+        logger.error(
+            "estimate_with_context_failed",
+            error_type=type(e).__name__,
+            error_message=str(e),
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to generate contextualized estimation. Check server logs for details.",
         )

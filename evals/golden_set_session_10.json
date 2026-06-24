@@ -1,0 +1,47 @@
+{
+  "description": "Golden set for evaluating hybrid search + reranking effectiveness (Session 10)",
+  "created_at": "2026-06-24",
+  "instructions": "relevant_chunk_ids are annotated at the component level: a chunk is relevant only if its component genuinely matches the query intent, not just its parent budget. Chunk-to-component mapping derived from data/budgets_sample.json (chunker preserves component order).",
+  "queries": [
+    {
+      "id": "Q1",
+      "text": "REST API with OAuth 2.0 authentication for fintech mobile application",
+      "domain": "Fintech / Banking",
+      "description": "Backend authentication system using OAuth 2.0 and JWT tokens for secure mobile access",
+      "relevant_chunk_ids": [1, 7, 8],
+      "comment": "1=OAuth 2.0 auth backend (banking), 7=Secure Authentication (mobile banking), 8=Backend API & Database (mobile banking). Excludes generic e-commerce REST API."
+    },
+    {
+      "id": "Q2",
+      "text": "E-commerce platform with payment processing and inventory management",
+      "domain": "E-commerce / Retail",
+      "description": "Shopping platform with shopping cart, payment gateway integration, and real-time inventory",
+      "relevant_chunk_ids": [3, 5, 14, 15],
+      "comment": "3=Real-time Inventory Management, 5=REST API (e-commerce), 14=Payment Processing (POS), 15=Inventory Service (POS)."
+    },
+    {
+      "id": "Q3",
+      "text": "Data warehouse with ETL pipeline and real-time analytics",
+      "domain": "Data / Analytics",
+      "description": "Data infrastructure for ingestion, transformation, and analytics queries; batch + streaming",
+      "relevant_chunk_ids": [16, 17, 36, 37],
+      "comment": "16=Data Ingestion Pipeline (ETL), 17=ML Analytics Engine, 36=Time Series Database, 37=Analytics & Anomaly Detection."
+    },
+    {
+      "id": "Q4",
+      "text": "Machine learning model deployment with monitoring and retraining",
+      "domain": "ML / AI",
+      "description": "ML operations platform for serving models, monitoring performance, and continuous retraining",
+      "relevant_chunk_ids": [17, 37, 44],
+      "comment": "17=ML Analytics Engine, 37=Analytics & Anomaly Detection (ML inference), 44=AI Resume Screening Engine. Corpus has no true MLOps budget; weak coverage expected."
+    },
+    {
+      "id": "Q5",
+      "text": "Internal tool for team collaboration with real-time sync",
+      "domain": "Internal Tools / Productivity",
+      "description": "Simple internal application for team communication, task management, and real-time collaboration",
+      "relevant_chunk_ids": [31, 32, 33, 34],
+      "comment": "31=E2E Encryption Engine, 32=Real-time Collaboration, 33=Web Editor UI, 34=Backend Document Server (document collaboration platform)."
+    }
+  ]
+}

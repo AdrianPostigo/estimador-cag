@@ -1,0 +1,5 @@
+Config,Label,Avg P@5,Avg Latency (ms)
+A,Semantic (no reranking),83.33%,322.6
+B,Hybrid (no reranking),68.33%,200.7
+C,Semantic (with reranking),58.33%,1164.4
+D,Hybrid (with reranking),58.33%,1091.2

@@ -126,36 +126,114 @@ class IngestBudgetConflictResponse(BaseModel):
 
 # Session 08: Semantic search
 class SearchRequest(BaseModel):
-    """Request for semantic search over embedded chunks."""
+    """Request for search over embedded chunks with optional reranking."""
 
     query: str = Field(
         min_length=1,
         max_length=2000,
-        description="Search query (will be embedded with text-embedding-3-small)",
+        description="Search query",
     )
     k: int = Field(
         default=5,
         ge=1,
         le=100,
-        description="Number of nearest neighbors to return",
+        description="Final number of results to return",
+    )
+    search_mode: str = Field(
+        default="semantic",
+        description="Search mode: 'semantic' (vector), 'lexical' (full-text), or 'hybrid' (RRF-fused)",
+    )
+    enable_reranking: bool = Field(
+        default=False,
+        description="Enable cross-encoder reranking (FlashRank) for fine-grained relevance ordering",
+    )
+    reranker_k: int = Field(
+        default=50,
+        ge=5,
+        le=200,
+        description="Number of documents to retrieve before reranking (recall stage of recall-then-rerank pattern)",
     )
 
 
 class SearchResult(BaseModel):
-    """Single result from semantic search."""
+    """Single result from search (with optional reranker score)."""
 
     chunk_id: int = Field(description="ID of chunk in PostgreSQL")
-    document_id: int = Field(description="ID of parent document")
+    document_id: int | None = Field(default=None, description="ID of parent document")
     chunk_type: str = Field(description="Type of chunk (e.g., 'component')")
     content: str = Field(description="Text content of chunk")
-    distance: float = Field(description="Cosine distance (0=identical, 2=opposite)")
+    distance: float | None = Field(default=None, description="Cosine distance (for semantic mode)")
+    rank: float | None = Field(default=None, description="Relevance rank (for lexical/hybrid mode)")
+    rrf_score: float | None = Field(default=None, description="RRF fusion score (for hybrid mode)")
+    reranker_score: float | None = Field(default=None, description="FlashRank cross-encoder score (if reranking enabled)")
     metadata: dict[str, Any] = Field(description="Metadata dict attached to chunk")
 
 
 class SearchResponse(BaseModel):
-    """Response with semantic search results."""
+    """Response with search results (semantic, lexical, hybrid, ±reranking)."""
 
     query: str = Field(description="Original query")
-    k: int = Field(description="Number of results requested")
-    search_time_ms: float = Field(description="Query execution time in milliseconds")
-    results: list[SearchResult] = Field(description="List of k nearest chunks")
+    k: int = Field(description="Final number of results returned")
+    search_mode: str = Field(description="Search mode used ('semantic', 'lexical', 'hybrid')")
+    enable_reranking: bool = Field(description="Whether reranking was applied")
+    search_time_ms: float = Field(description="Retrieval execution time in milliseconds")
+    reranking_time_ms: float = Field(description="Reranking time in milliseconds (0 if disabled)")
+    results: list[SearchResult] = Field(description="List of final results (after reranking if enabled)")
+
+
+# Session 10: Estimation with retrieved context
+class EstimateWithContextRequest(BaseModel):
+    """Request for estimation with context from similar historical budgets."""
+
+    query: str = Field(
+        min_length=1,
+        max_length=2000,
+        description="Search query to find similar budgets (e.g., 'REST API with OAuth for fintech')",
+    )
+    search_k: int = Field(
+        default=5,
+        ge=1,
+        le=20,
+        description="Number of similar budget chunks to retrieve as context",
+    )
+    project_type: str = Field(
+        description="Project type (mobile_app, web_saas, internal_tool, data_pipeline)",
+    )
+    detail_level: str = Field(
+        description="Detail level (summary, medium, detailed)",
+    )
+    output_format: str = Field(
+        description="Output format (phases_table, line_items, narrative)",
+    )
+
+
+class RetrievalMetrics(BaseModel):
+    """Metrics about chunk retrieval for estimation context."""
+
+    query: str = Field(description="Original search query")
+    search_time_ms: float = Field(description="Time to retrieve chunks (milliseconds)")
+    chunks_retrieved: int = Field(description="Number of chunks retrieved")
+    top_distance: float = Field(description="Distance (cosine) of top-1 result", default=None)
+
+
+class ContextualizedChunk(BaseModel):
+    """Chunk retrieved for estimation context."""
+
+    chunk_id: int = Field(description="ID of chunk in PostgreSQL")
+    rank: int = Field(description="Rank in search results (1-indexed)")
+    distance: float = Field(description="Cosine distance from query embedding")
+    content: str = Field(description="Text content of chunk")
+    chunk_type: str = Field(description="Type of chunk (component, etc)")
+    metadata: dict[str, Any] = Field(description="Metadata: scope, technologies, complexity, estimated_hours")
+
+
+class EstimateWithContextResponse(BaseModel):
+    """Response with estimation and retrieved context chunks."""
+
+    estimation: dict[str, Any] = Field(
+        description="EstimationOutput (project_summary, tasks, total_hours_min/max, etc)",
+    )
+    retrieval: RetrievalMetrics = Field(description="Search metrics for context retrieval")
+    context_chunks: list[ContextualizedChunk] = Field(
+        description="Similar budgets retrieved to inform the estimation",
+    )
