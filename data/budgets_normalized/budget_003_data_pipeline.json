@@ -1,0 +1,54 @@
+{
+  "project_summary": "Pipeline de ETL automatizado para ingestar datos de múltiples fuentes (APIs, CSV, databases) y cargarlos en data warehouse (Snowflake). Incluye transformaciones de limpieza, validación y enriquecimiento de datos. Scheduled execution diaria con monitoreo y alertas.",
+  "assumptions": [
+    "Acceso a credenciales de APIs de fuentes de datos ya disponible.",
+    "Data warehouse (Snowflake) ya está provisionado.",
+    "Orquestación con Apache Airflow o similar.",
+    "Datos crudos ~5-10 GB diarios.",
+    "No se incluye histórico de 5+ años; solo últimos 2 años.",
+    "Transformaciones son principalmente SQL, algunas en Python."
+  ],
+  "tasks": [
+    {
+      "name": "Diseño de esquema de datos warehouse y documentación",
+      "hours_min": 30,
+      "hours_max": 40
+    },
+    {
+      "name": "Implementación de extractores (conectores a APIs, JDBC para DBs)",
+      "hours_min": 100,
+      "hours_max": 150
+    },
+    {
+      "name": "Transformaciones, validación y quality checks",
+      "hours_min": 50,
+      "hours_max": 70
+    },
+    {
+      "name": "Setup de orquestación (Airflow DAGs) y monitoreo",
+      "hours_min": 20,
+      "hours_max": 30
+    }
+  ],
+  "total_hours_min": 200,
+  "total_hours_max": 290,
+  "recommended_team": [
+    "1 Data Engineer Senior (Airflow, Snowflake, SQL)",
+    "1 Data Analyst (transformaciones, data quality)",
+    "1 DevOps Engineer (infraestructura, monitoring)"
+  ],
+  "duration_weeks_min": 6,
+  "duration_weeks_max": 8,
+  "risks": [
+    "APIs de fuentes pueden cambiar formato o estructura sin aviso previo.",
+    "Performance de transformaciones SQL puede degradarse con volúmenes crecientes.",
+    "Inconsistencias en datos de fuentes pueden requerir lógica de manejo de excepciones compleja.",
+    "Data warehouse puede alcanzar límites de almacenamiento o costo."
+  ],
+  "open_questions": [
+    "¿Cuál es el SLA para latencia de datos? (real-time vs. diaria vs. semanal)",
+    "¿Se requiere versionado de datos (data lineage)? ",
+    "¿Cuáles son los requisitos de retención y cumplimiento normativo?",
+    "¿Necesita soporte para datos históricos? ¿Hasta cuándo?"
+  ]
+}

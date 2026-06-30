@@ -1,0 +1,56 @@
+{
+  "project_summary": "Plataforma SaaS para gestión de proyectos y seguimiento de tareas. Stack: Next.js frontend, Node.js backend, PostgreSQL database. Soporta colaboración en tiempo real y integración con webhooks. Usuarios: 100-500 empresas.",
+  "assumptions": [
+    "El equipo tiene experiencia previa con el stack tecnológico seleccionado.",
+    "La base de datos se alojará en PostgreSQL administrado (RDS o similar).",
+    "No se incluye migración de datos desde sistemas legados.",
+    "La autenticación será mediante JWT con almacenamiento seguro de tokens.",
+    "El front-end será una SPA (Single Page Application) con Next.js."
+  ],
+  "tasks": [
+    {
+      "name": "Análisis de requisitos, arquitectura y diseño de modelos de datos",
+      "hours_min": 40,
+      "hours_max": 60
+    },
+    {
+      "name": "Implementación del backend API (CRUD, autenticación, webhooks)",
+      "hours_min": 80,
+      "hours_max": 120
+    },
+    {
+      "name": "Desarrollo del frontend (componentes, forms, vistas principales)",
+      "hours_min": 60,
+      "hours_max": 90
+    },
+    {
+      "name": "Testing (unitario, integración, end-to-end)",
+      "hours_min": 30,
+      "hours_max": 40
+    },
+    {
+      "name": "Deployment, CI/CD, y documentación técnica",
+      "hours_min": 10,
+      "hours_max": 15
+    }
+  ],
+  "total_hours_min": 220,
+  "total_hours_max": 325,
+  "recommended_team": [
+    "1 Backend Developer Senior (Node.js, PostgreSQL)",
+    "1 Frontend Developer Mid-level (Next.js, React)",
+    "1 QA Engineer (testing y CI/CD)"
+  ],
+  "duration_weeks_min": 8,
+  "duration_weeks_max": 12,
+  "risks": [
+    "Cambios en requisitos durante el desarrollo pueden extender timeline.",
+    "Performance bajo alta concurrencia si la arquitectura no se optimiza adecuadamente.",
+    "Integración con servicios de terceros puede introducir dependencias externas."
+  ],
+  "open_questions": [
+    "¿Se requiere soporte para offline-first sync de datos?",
+    "¿Cuál es el SLA esperado para disponibilidad?",
+    "¿Necesita integración con SSO (Okta, Azure AD)?"
+  ]
+}

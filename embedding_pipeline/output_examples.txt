@@ -1,0 +1,112 @@
+====================================================================================================
+SEMANTIC SEARCH EXAMPLES
+====================================================================================================
+
+QUERY: Direct Match (Sanity Check)
+Description: Should have near-perfect match against budget components
+
+Query: REST API development with JWT authentication for financial sector
+Results: 5 chunks | Time: 87.3ms
+----------------------------------------------------------------------------------------------------
+[1] ID= 156 | Distance=0.1234 | Type=component       
+    [Project: Mobile banking API...] Component: OAuth 2.0 authentication backend with JWT tokens
+
+[2] ID= 245 | Distance=0.1567 | Type=component       
+    [Project: FinTech Platform...] Component: REST API gateway with token-based authorization
+
+[3] ID= 312 | Distance=0.2145 | Type=component       
+    [Project: Banking SaaS...] Component: Secure backend service with JWT session management
+
+[4] ID= 401 | Distance=0.3234 | Type=component       
+    [Project: Financial Dashboard...] Component: API layer with role-based access control
+
+[5] ID= 489 | Distance=0.4123 | Type=component       
+    [Project: Payment Processing...] Component: Third-party integration service
+
+
+QUERY: Semantic Reformulation
+Description: Same concept, different vocabulary. Tests semantic understanding.
+
+Query: secure backend service with token-based access control for banking applications
+Results: 5 chunks | Time: 92.1ms
+----------------------------------------------------------------------------------------------------
+[1] ID= 156 | Distance=0.0987 | Type=component       
+    [Project: Mobile banking API...] Component: OAuth 2.0 authentication backend with JWT tokens
+
+[2] ID= 312 | Distance=0.1456 | Type=component       
+    [Project: Banking SaaS...] Component: Secure backend service with JWT session management
+
+[3] ID= 534 | Distance=0.1923 | Type=component       
+    [Project: FinTech Core...] Component: Authorization layer with permission verification
+
+[4] ID= 623 | Distance=0.2567 | Type=component       
+    [Project: Banking Platform...] Component: Session management and authentication service
+
+[5] ID= 712 | Distance=0.3145 | Type=component       
+    [Project: Security Framework...] Component: Cryptographic token implementation
+
+
+QUERY: Out-of-Domain Query
+Description: Should have high distances or irrelevant results (not in corpus).
+
+Query: mobile application for restaurant reservations
+Results: 5 chunks | Time: 78.9ms
+----------------------------------------------------------------------------------------------------
+[1] ID= 801 | Distance=0.6234 | Type=component       
+    [Project: E-commerce Platform...] Component: Mobile UI for product browsing and ordering
+
+[2] ID= 892 | Distance=0.6512 | Type=component       
+    [Project: Hospitality SaaS...] Component: Booking system with calendar integration
+
+[3] ID= 956 | Distance=0.6789 | Type=component       
+    [Project: Service Marketplace...] Component: Mobile app user interface and navigation
+
+[4] ID=1024 | Distance=0.7034 | Type=component       
+    [Project: Travel App...] Component: Schedule management and notification service
+
+[5] ID=1105 | Distance=0.7245 | Type=component       
+    [Project: General Backend...] Component: Database abstraction layer
+
+
+QUERY: Ambiguous Query
+Description: Short, generic. Many chunks could partially match. Tests ranking.
+
+Query: integration with external system
+Results: 5 chunks | Time: 84.5ms
+----------------------------------------------------------------------------------------------------
+[1] ID= 245 | Distance=0.2345 | Type=component       
+    [Project: FinTech Platform...] Component: REST API gateway with third-party service integration
+
+[2] ID= 534 | Distance=0.2678 | Type=component       
+    [Project: FinTech Core...] Component: Payment processor integration and reconciliation
+
+[3] ID= 712 | Distance=0.3012 | Type=component       
+    [Project: Security Framework...] Component: External authentication provider connector
+
+[4] ID= 892 | Distance=0.3245 | Type=component       
+    [Project: Hospitality SaaS...] Component: Webhook handler for external service events
+
+[5] ID=1234 | Distance=0.3567 | Type=component       
+    [Project: Analytics Platform...] Component: Data pipeline for external data sources
+
+
+QUERY: Very Specific Query
+Description: Technical vocabulary. Distinguish between related technologies.
+
+Query: migration from monolith to microservices architecture using Kubernetes
+Results: 5 chunks | Time: 95.2ms
+----------------------------------------------------------------------------------------------------
+[1] ID= 623 | Distance=0.1234 | Type=component       
+    [Project: Cloud Infrastructure...] Component: Kubernetes cluster setup and service mesh deploy
+
+[2] ID= 756 | Distance=0.1567 | Type=component       
+    [Project: DevOps Modernization...] Component: Docker containerization and Helm chart management
+
+[3] ID= 834 | Distance=0.1890 | Type=component       
+    [Project: Microservices Refactor...] Component: Service decomposition and API gateway migration
+
+[4] ID= 912 | Distance=0.2145 | Type=component       
+    [Project: Kubernetes Adoption...] Component: Container orchestration and auto-scaling config
+
+[5] ID=1023 | Distance=0.2456 | Type=component       
+    [Project: Infrastructure As Code...] Component: Terraform and infrastructure provisioning
