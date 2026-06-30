@@ -1,0 +1,13 @@
+Project to estimate:
+{{ description }}
+
+CONTEXT — retrieved historical sources (cite lines by their chunk_id):
+{% for source in sources %}
+[chunk_id: {{ source.chunk_id }} | document_id: {{ source.document_id }}]
+{{ source.content }}
+---
+{% endfor %}
+
+Produce the grounded estimate as the JSON object specified in the system
+message. Cite only chunk_id values listed above; mark any unsupported
+component as grounded=false with hours=0.

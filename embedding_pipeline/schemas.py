@@ -2,7 +2,7 @@
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 Sector = Literal[
@@ -237,3 +237,140 @@ class EstimateWithContextResponse(BaseModel):
     context_chunks: list[ContextualizedChunk] = Field(
         description="Similar budgets retrieved to inform the estimation",
     )
+
+
+# Session 11: Grounded estimation with verifiable line-level citations
+class SourceReference(BaseModel):
+    """A citation backing a single estimation line to a retrieved source."""
+
+    chunk_id: str = Field(
+        description="ID of the retrieved chunk supporting this line (DB chunk id)",
+    )
+    document_id: str = Field(
+        description="Historical budget the chunk belongs to (budget_id)",
+    )
+    evidence: str = Field(
+        min_length=1,
+        description="Verbatim span or figure from the source backing the line",
+    )
+
+
+class EstimateLineItem(BaseModel):
+    """A single estimation line with its grounding to historical sources."""
+
+    component: str = Field(min_length=1, description="Name of the estimated component")
+    hours: float = Field(ge=0, description="Estimated hours for this component")
+    rationale: str = Field(min_length=1, description="Reasoning behind the estimate")
+    grounded: bool = Field(
+        description="True if derived from retrieved sources; False if insufficient source data",
+    )
+    sources: list[SourceReference] = Field(
+        description="Supporting sources; non-empty iff grounded is True (use [] when grounded is False)",
+    )
+
+    @model_validator(mode="after")
+    def enforce_grounding_integrity(self) -> "EstimateLineItem":
+        """
+        Integrity rule:
+        - grounded=True  -> at least one source.
+        - grounded=False -> no sources and no invented hours (must be 0).
+        """
+        if self.grounded:
+            if not self.sources:
+                raise ValueError("a grounded line item must cite at least one source")
+        else:
+            if self.sources:
+                raise ValueError("a non-grounded line item must not cite any source")
+            if self.hours != 0:
+                raise ValueError(
+                    "a non-grounded line item cannot invent hours; hours must be 0"
+                )
+        return self
+
+
+class GroundedEstimateOutput(BaseModel):
+    """A grounded estimation: project summary plus cited line items."""
+
+    project_summary: str = Field(min_length=1, description="Brief summary of the project")
+    line_items: list[EstimateLineItem] = Field(
+        min_length=1,
+        description="Estimation lines, each carrying its grounding",
+    )
+    total_hours: float = Field(
+        ge=0,
+        description="Total estimated hours (sum of line item hours)",
+    )
+
+    @model_validator(mode="after")
+    def total_hours_matches_lines(self) -> "GroundedEstimateOutput":
+        """total_hours must equal the sum of line item hours (small tolerance)."""
+        line_sum = sum(item.hours for item in self.line_items)
+        if abs(self.total_hours - line_sum) > 0.5:
+            raise ValueError(
+                f"total_hours ({self.total_hours}) must equal the sum of "
+                f"line item hours ({line_sum})"
+            )
+        return self
+
+
+# Session 11: Post-generation citation verification
+class LineCitationStatus(BaseModel):
+    """Citation status of a single estimation line."""
+
+    component: str = Field(description="Component name of the line")
+    status: Literal["grounded", "dangling", "insufficient_data"] = Field(
+        description="grounded=all cited ids present; dangling=invented id; "
+        "insufficient_data=line marked grounded=False",
+    )
+    cited_chunk_ids: list[str] = Field(
+        default_factory=list,
+        description="All chunk_ids cited by this line",
+    )
+    dangling_chunk_ids: list[str] = Field(
+        default_factory=list,
+        description="Cited chunk_ids that were NOT in the retrieved context",
+    )
+
+
+class CitationReport(BaseModel):
+    """Result of verifying a grounded estimate's citations against context."""
+
+    total_lines: int = Field(description="Total number of estimation lines")
+    grounded_lines: int = Field(description="Lines correctly grounded in retrieved context")
+    dangling_lines: int = Field(description="Lines citing at least one invented chunk_id")
+    insufficient_data_lines: int = Field(description="Lines marked grounded=False")
+    has_dangling_citations: bool = Field(
+        description="True if any line has a dangling citation (quality failure)",
+    )
+    lines: list[LineCitationStatus] = Field(
+        description="Per-line citation status",
+    )
+
+
+class GroundedEstimateRequest(BaseModel):
+    """Request for a grounded estimation with verifiable citations."""
+
+    query: str = Field(
+        min_length=1,
+        max_length=2000,
+        description="Project description / estimation request",
+    )
+    search_k: int = Field(
+        default=5,
+        ge=1,
+        le=20,
+        description="Number of historical chunks to retrieve as grounding sources",
+    )
+    search_mode: str = Field(
+        default="semantic",
+        description="Retrieval mode: 'semantic', 'lexical', or 'hybrid'",
+    )
+
+
+class GroundedEstimateResponse(BaseModel):
+    """Response with a grounded estimate plus its citation verification."""
+
+    estimate: GroundedEstimateOutput = Field(description="Generated grounded estimate")
+    citation_report: CitationReport = Field(description="Post-generation citation verification")
+    contexts: list[str] = Field(description="Retrieved chunk contents passed to the generator")
+    request_id: str = Field(description="Correlation id for this generation")

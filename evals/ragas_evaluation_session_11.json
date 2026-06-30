@@ -1,0 +1,97 @@
+{
+  "judge_model": "gpt-4o-mini",
+  "embedding_model": "text-embedding-3-small",
+  "aggregate": {
+    "faithfulness": 0.34769230769230763,
+    "answer_relevancy": 0.3105196605713473,
+    "llm_context_precision_with_reference": 0.7833333332965555,
+    "context_recall": 0.5
+  },
+  "per_query": [
+    {
+      "id": "Q1",
+      "user_input": "REST API with OAuth 2.0 authentication for fintech mobile application",
+      "retrieved_contexts": [
+        "[Project: Mobile banking API with OAuth 2.0 authentication and PSD2 compliance]\n[Client sector: finance | Year: 2024 | Main tech: ruby_on_rails]\n\nComponent: OAuth 2.0 authentication backend\nDescription: Implementation of OAuth 2.0 flows (authorization code, refresh token) with JWT-based session management, multi-tenant token isolation, and rate limiting per client.\nTech stack: ruby_on_rails, postgresql, redis\nComplexity: high\nEstimated hours: 120",
+        "[Project: Mobile banking app with transaction history and transfers]\n[Client sector: finance | Year: 2023 | Main tech: React Native]\n\nComponent: Secure Authentication\nDescription: Biometric login, PIN, session management\nTech stack: React Native, JWT, Keychain\nComplexity: high\nEstimated hours: 80",
+        "[Project: Mobile banking app with transaction history and transfers]\n[Client sector: finance | Year: 2023 | Main tech: React Native]\n\nComponent: Backend API & Database\nDescription: Transaction processing, account balance, transfer logic\nTech stack: Python, Flask, PostgreSQL\nComplexity: high\nEstimated hours: 140",
+        "[Project: Mobile banking app with transaction history and transfers]\n[Client sector: finance | Year: 2023 | Main tech: React Native]\n\nComponent: Mobile UI Components\nDescription: Account view, transaction list, transfer form\nTech stack: React Native, Redux\nComplexity: medium\nEstimated hours: 100",
+        "[Project: E-commerce platform with real-time inventory management]\n[Client sector: ecommerce | Year: 2023 | Main tech: React + Node.js]\n\nComponent: Authentication & Authorization\nDescription: User login, JWT tokens, role-based access control\nTech stack: Node.js, JWT, PostgreSQL\nComplexity: medium\nEstimated hours: 80"
+      ],
+      "response": "Project summary: REST API with OAuth 2.0 authentication for fintech mobile application.\n\nLine items:\n- OAuth 2.0 authentication backend: 120.0h. Estimate based on a similar project's implementation of OAuth 2.0 flows for mobile banking. (sources: 1)\n- Mobile UI Components: not grounded (insufficient source data). No historical source in the context covers mobile UI components for the current project.\n- Secure Authentication: not grounded (insufficient source data). No historical source in the context specifically covers secure authentication for this REST API project.\n- Backend API & Database: not grounded (insufficient source data). No historical source in the context specifically covers a backend API and database implementation for this project.\n\nTotal hours: 120.0",
+      "reference": "Expected total ~340 hours across three grounded components: an OAuth 2.0 authentication backend (~120h, from budget BUD-2024-014), secure mobile authentication (~80h, from budget BG-2023-002), and a backend API with database layer (~140h, from budget BG-2023-002). The fintech/banking corpus covers these components well, so all lines should be grounded with no insufficient-data lines.",
+      "faithfulness": 0.1,
+      "answer_relevancy": 0.0,
+      "llm_context_precision_with_reference": 0.9999999999666667,
+      "context_recall": 0.5
+    },
+    {
+      "id": "Q2",
+      "user_input": "E-commerce platform with payment processing and inventory management",
+      "retrieved_contexts": [
+        "[Project: E-commerce platform with real-time inventory management]\n[Client sector: ecommerce | Year: 2023 | Main tech: React + Node.js]\n\nComponent: REST API\nDescription: Product, order, inventory endpoints\nTech stack: Node.js, Express, PostgreSQL\nComplexity: medium\nEstimated hours: 120",
+        "[Project: E-commerce platform with real-time inventory management]\n[Client sector: ecommerce | Year: 2023 | Main tech: React + Node.js]\n\nComponent: Real-time Inventory Management\nDescription: Stock tracking, updates, alerts via WebSocket\nTech stack: Node.js, WebSocket, Redis\nComplexity: high\nEstimated hours: 120",
+        "[Project: E-commerce platform with real-time inventory management]\n[Client sector: ecommerce | Year: 2023 | Main tech: React + Node.js]\n\nComponent: Authentication & Authorization\nDescription: User login, JWT tokens, role-based access control\nTech stack: Node.js, JWT, PostgreSQL\nComplexity: medium\nEstimated hours: 80",
+        "[Project: Point of Sale system with inventory sync]\n[Client sector: ecommerce | Year: 2023 | Main tech: C# + WinForms]\n\nComponent: Payment Processing\nDescription: Credit card, cash, gift card handling\nTech stack: C#, Payment Gateway API\nComplexity: high\nEstimated hours: 80",
+        "[Project: E-commerce platform with real-time inventory management]\n[Client sector: ecommerce | Year: 2023 | Main tech: React + Node.js]\n\nComponent: Frontend Dashboard\nDescription: React SPA with charts, filters, real-time updates\nTech stack: React, D3.js, Redux\nComplexity: medium\nEstimated hours: 160"
+      ],
+      "response": "Project summary: E-commerce platform with payment processing and inventory management.\n\nLine items:\n- REST API: 120.0h. Based on the historical estimate for the REST API component from a similar e-commerce project. (sources: 5)\n- Real-time Inventory Management: 120.0h. Mirrors the historical estimate for the real-time inventory management component from the same e-commerce project. (sources: 3)\n- Authentication & Authorization: 80.0h. Reflects the estimation for user authentication components in e-commerce setups. (sources: 2)\n- Payment Processing: 80.0h. Based on the historical estimate for payment processing in a related project. (sources: 14)\n- Frontend Dashboard: 160.0h. Corresponds to the estimation for frontend dashboards in similar e-commerce platforms. (sources: 4)\n- Inventory Management Module: not grounded (insufficient source data). No historical source in the context explicitly supports an inventory management module separate from the real-time management.\n\nTotal hours: 560.0",
+      "reference": "Expected total ~420 hours across four grounded components: real-time inventory management (~120h, from budget BG-2023-001), a REST API layer (~120h, from budget BG-2023-001), payment processing (~80h, from budget BG-2023-004), and an inventory service (~100h, from budget BG-2023-004). Both an e-commerce and a point-of-sale budget cover payments and inventory, so all lines should be grounded.",
+      "faithfulness": 0.5,
+      "answer_relevancy": 0.49989780615810453,
+      "llm_context_precision_with_reference": 0.99999999998,
+      "context_recall": 0.5
+    },
+    {
+      "id": "Q3",
+      "user_input": "Data warehouse with ETL pipeline and real-time analytics",
+      "retrieved_contexts": [
+        "[Project: Data visualization dashboard with ML-powered insights]\n[Client sector: other | Year: 2024 | Main tech: Python + D3.js]\n\nComponent: Data Ingestion Pipeline\nDescription: Connect multiple data sources, ETL process\nTech stack: Python, Pandas, SQLAlchemy\nComplexity: high\nEstimated hours: 120",
+        "[Project: Data visualization dashboard with ML-powered insights]\n[Client sector: other | Year: 2024 | Main tech: Python + D3.js]\n\nComponent: ML Analytics Engine\nDescription: Forecasting, anomaly detection, clustering\nTech stack: Python, Scikit-learn, TensorFlow\nComplexity: high\nEstimated hours: 160",
+        "[Project: Data visualization dashboard with ML-powered insights]\n[Client sector: other | Year: 2024 | Main tech: Python + D3.js]\n\nComponent: Interactive Dashboards\nDescription: D3.js charts, filters, drill-down capabilities\nTech stack: D3.js, Vue.js\nComplexity: medium\nEstimated hours: 120",
+        "[Project: E-commerce platform with real-time inventory management]\n[Client sector: ecommerce | Year: 2023 | Main tech: React + Node.js]\n\nComponent: Frontend Dashboard\nDescription: React SPA with charts, filters, real-time updates\nTech stack: React, D3.js, Redux\nComplexity: medium\nEstimated hours: 160",
+        "[Project: IoT platform for urban sensing and management]\n[Client sector: industrial | Year: 2024 | Main tech: Python + MQTT]\n\nComponent: Time Series Database\nDescription: Store and query sensor metrics efficiently\nTech stack: InfluxDB, Python\nComplexity: high\nEstimated hours: 120"
+      ],
+      "response": "Project summary: Data warehouse with ETL pipeline and real-time analytics.\n\nLine items:\n- Data Ingestion Pipeline: 120.0h. Estimated based on historical data for a complex ETL process in a similar project. (sources: 16)\n- ML Analytics Engine: 160.0h. Derived from a previous project requiring advanced analytics, similar complexity and tech stack. (sources: 17)\n- Interactive Dashboards: 120.0h. Aligned with the historical estimate on interactive dashboard capabilities using a similar tech stack. (sources: 18)\n- Time Series Database: 120.0h. Estimated hours based on requirements for an efficient storage and querying of metrics in the context of data warehouses. (sources: 36)\n- Frontend Dashboard: not grounded (insufficient source data). No historical source covers a frontend dashboard specific to the data warehouse context.\n\nTotal hours: 520.0",
+      "reference": "Expected total ~550 hours across four grounded components: a data ingestion pipeline (~120h, from budget BG-2024-005), an analytics engine (~160h, from budget BG-2024-005), a time series database for storage (~120h, from budget BG-2024-010), and an analytics and anomaly detection layer (~150h, from budget BG-2024-010). There is no dedicated data-warehouse budget, but ingestion, storage, and analytics components are covered, so all lines should be grounded.",
+      "faithfulness": 0.26666666666666666,
+      "answer_relevancy": 0.4564556658601109,
+      "llm_context_precision_with_reference": 0.0,
+      "context_recall": 0.5
+    },
+    {
+      "id": "Q4",
+      "user_input": "Machine learning model deployment with monitoring and retraining",
+      "retrieved_contexts": [
+        "[Project: Data visualization dashboard with ML-powered insights]\n[Client sector: other | Year: 2024 | Main tech: Python + D3.js]\n\nComponent: ML Analytics Engine\nDescription: Forecasting, anomaly detection, clustering\nTech stack: Python, Scikit-learn, TensorFlow\nComplexity: high\nEstimated hours: 160",
+        "[Project: IoT platform for urban sensing and management]\n[Client sector: industrial | Year: 2024 | Main tech: Python + MQTT]\n\nComponent: Analytics & Anomaly Detection\nDescription: Pattern detection, predictions, alerting\nTech stack: Python, Scikit-learn, Spark\nComplexity: high\nEstimated hours: 150",
+        "[Project: Data visualization dashboard with ML-powered insights]\n[Client sector: other | Year: 2024 | Main tech: Python + D3.js]\n\nComponent: Data Ingestion Pipeline\nDescription: Connect multiple data sources, ETL process\nTech stack: Python, Pandas, SQLAlchemy\nComplexity: high\nEstimated hours: 120",
+        "[Project: Applicant tracking system with AI resume screening]\n[Client sector: logistics | Year: 2023 | Main tech: Python + Angular]\n\nComponent: Job Posting Management\nDescription: Create, publish, track job openings\nTech stack: Django, PostgreSQL\nComplexity: medium\nEstimated hours: 80",
+        "[Project: Applicant tracking system with AI resume screening]\n[Client sector: logistics | Year: 2023 | Main tech: Python + Angular]\n\nComponent: Recruiter Dashboard\nDescription: Pipeline view, candidate evaluation, scheduling\nTech stack: Angular, D3.js\nComplexity: low\nEstimated hours: 60"
+      ],
+      "response": "Project summary: Machine learning model deployment with monitoring and retraining, focusing on analytics, anomaly detection, and data ingestion.\n\nLine items:\n- ML Analytics Engine: 160.0h. Estimated based on the complexity and technology stack similar to the data visualization dashboard project. (sources: 17)\n- Analytics & Anomaly Detection: 150.0h. Grounded in the historical context of the IoT platform project with a focus on similar analytics objectives. (sources: 37)\n- Data Ingestion Pipeline: 120.0h. Mirrors the data ingestion needs observed in the data visualization project. (sources: 16)\n- Monitoring Infrastructure: not grounded (insufficient source data). No historical source in the context covers monitoring infrastructure for machine learning deployment.\n- Retraining Mechanism: not grounded (insufficient source data). No historical source in the context addresses a retraining mechanism for machine learning models.\n\nTotal hours: 430.0",
+      "reference": "Expected total ~450 hours for the grounded components: an ML analytics/serving engine (~160h, from budget BG-2024-005), an analytics and anomaly detection layer reusable for model monitoring (~150h, from budget BG-2024-010), and an AI screening engine as a deployment reference (~140h, from budget BG-2023-012). The corpus has no dedicated MLOps budget: model retraining and dedicated monitoring infrastructure are not directly covered, so an expert estimate would mark those sub-components as insufficient-data rather than invent hours.",
+      "faithfulness": 0.5384615384615384,
+      "answer_relevancy": 0.0,
+      "llm_context_precision_with_reference": 0.9999999999,
+      "context_recall": 0.5
+    },
+    {
+      "id": "Q5",
+      "user_input": "Internal tool for team collaboration with real-time sync",
+      "retrieved_contexts": [
+        "[Project: Document collaboration platform with encryption]\n[Client sector: other | Year: 2024 | Main tech: Rust + WebAssembly]\n\nComponent: Real-time Collaboration\nDescription: Operational transformation, conflict resolution\nTech stack: Rust, WebSocket\nComplexity: high\nEstimated hours: 180",
+        "[Project: Document collaboration platform with encryption]\n[Client sector: other | Year: 2024 | Main tech: Rust + WebAssembly]\n\nComponent: Web Editor UI\nDescription: WASM-based editor, rich text support\nTech stack: WebAssembly, TypeScript, React\nComplexity: high\nEstimated hours: 180",
+        "[Project: Document collaboration platform with encryption]\n[Client sector: other | Year: 2024 | Main tech: Rust + WebAssembly]\n\nComponent: End-to-End Encryption Engine\nDescription: AES encryption, key management, secure sharing\nTech stack: Rust, libsodium\nComplexity: high\nEstimated hours: 160",
+        "[Project: Document collaboration platform with encryption]\n[Client sector: other | Year: 2024 | Main tech: Rust + WebAssembly]\n\nComponent: Backend Document Server\nDescription: Document storage, versioning, permissions\nTech stack: Rust, PostgreSQL\nComplexity: medium\nEstimated hours: 120",
+        "[Project: E-commerce platform with real-time inventory management]\n[Client sector: ecommerce | Year: 2023 | Main tech: React + Node.js]\n\nComponent: Real-time Inventory Management\nDescription: Stock tracking, updates, alerts via WebSocket\nTech stack: Node.js, WebSocket, Redis\nComplexity: high\nEstimated hours: 120"
+      ],
+      "response": "Project summary: Internal tool for team collaboration with real-time sync.\n\nLine items:\n- Real-time Collaboration: 180.0h. Estimated hours mirror the historical real-time collaboration component used in a document collaboration platform. (sources: 32)\n- Web Editor UI: 180.0h. Estimated hours are based on the web editor UI component from the document collaboration platform. (sources: 33)\n- End-to-End Encryption Engine: 160.0h. This estimate reflects the complexity and tech stack used in the encryption engine for secure sharing in the previous platform. (sources: 31)\n- Backend Document Server: 120.0h. Mirrors the backend document server component's estimated hours from the historical project. (sources: 34)\n- Real-time Inventory Management: not grounded (insufficient source data). No historical source covers a real-time sync component for team collaboration.\n\nTotal hours: 640.0",
+      "reference": "Expected total ~640 hours across four grounded components, all from the document collaboration budget BG-2024-009: an end-to-end encryption engine (~160h), a real-time collaboration/sync engine (~180h), a web editor UI (~180h), and a backend document server (~120h). The collaboration platform covers real-time sync directly, so all lines should be grounded in a single budget.",
+      "faithfulness": 0.3333333333333333,
+      "answer_relevancy": 0.5962448308385211,
+      "llm_context_precision_with_reference": 0.9166666666361111,
+      "context_recall": 0.5
+    }
+  ]
+}

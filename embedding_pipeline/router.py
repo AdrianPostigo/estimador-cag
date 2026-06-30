@@ -1,15 +1,20 @@
 """FastAPI router for embedding ingestion."""
 
+from uuid import uuid4
+
 import structlog
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_async_session
 from app.services.llm_service import LLMService
+from embedding_pipeline.grounded_generation import GroundedEstimator
 from embedding_pipeline.persistence import DocumentRepository
 from embedding_pipeline.schemas import (
     EstimateWithContextRequest,
     EstimateWithContextResponse,
+    GroundedEstimateRequest,
+    GroundedEstimateResponse,
     IngestBudgetRequest,
     IngestBudgetResponse,
     SearchRequest,
@@ -255,4 +260,83 @@ async def estimate_with_context(
         raise HTTPException(
             status_code=500,
             detail="Failed to generate contextualized estimation. Check server logs for details.",
+        )
+
+
+@router.post(
+    "/estimate/grounded",
+    response_model=GroundedEstimateResponse,
+    status_code=200,
+    summary="Grounded estimation with verifiable line-level citations",
+    tags=["embeddings"],
+    responses={
+        422: {"description": "Dangling citations detected (estimate rejected) or validation error"},
+        500: {"description": "Generation error (OpenAI, database, etc)"},
+    },
+)
+async def estimate_grounded(
+    request: GroundedEstimateRequest,
+    session: AsyncSession = Depends(get_async_session),
+) -> GroundedEstimateResponse:
+    """
+    Generate a grounded estimate where every line cites the historical budget
+    chunk it was derived from, then verify those citations.
+
+    Processing:
+      1. Retrieve top-k grounding chunks
+      2. Generate a GroundedEstimateOutput via OpenAI structured outputs
+      3. Verify each cited chunk_id exists in the retrieved context
+      4. Reject (422) if any dangling citation is detected
+
+    Status codes:
+      - 200: Success (all citations verified)
+      - 422: Dangling citations detected (quality failure) or schema validation error
+      - 500: Generation error (OpenAI, database, etc)
+    """
+    request_id = str(uuid4())
+    try:
+        repository = DocumentRepository(session)
+        estimator = GroundedEstimator(repository)
+
+        result = await estimator.generate(
+            query=request.query,
+            search_k=request.search_k,
+            search_mode=request.search_mode,
+            request_id=request_id,
+        )
+
+        report = result["citation_report"]
+
+        # Reject estimates with dangling citations: a hallucinated source is a
+        # quality failure, not a cosmetic detail.
+        if report.has_dangling_citations:
+            raise HTTPException(
+                status_code=422,
+                detail={
+                    "error": "dangling_citations_detected",
+                    "request_id": request_id,
+                    "citation_report": report.model_dump(),
+                },
+            )
+
+        return GroundedEstimateResponse(
+            estimate=result["estimate"],
+            citation_report=report,
+            contexts=result["contexts"],
+            request_id=result["request_id"],
+        )
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        logger.error(
+            "grounded_estimate_failed",
+            request_id=request_id,
+            error_type=type(e).__name__,
+            error_message=str(e),
+        )
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to generate grounded estimation. Check server logs for details.",
         )

@@ -9,11 +9,17 @@ dependencies = [
     "anthropic>=0.97.0",
     "asyncpg>=0.29",
     "click>=8.1.0",
+    "datasets>=2.16.0",
     "fastapi>=0.136.1",
     "flashrank>=0.2.0",
     "httpx>=0.28.0",
+    # langchain-community removed chat_models.vertexai, which ragas 0.2.x still
+    # hard-imports; scripts/evaluate_ragas.py injects a stub for that module.
+    "langchain-openai>=0.2.0",
     "litellm>=1.83.14",
+    "openai>=1.60.0",
     "pgvector>=0.3",
+    "ragas>=0.2.0,<0.3",
     "pydantic-settings>=2.14.0",
     "pypdf>=5.0.0",
     "python-docx>=1.1.0",
