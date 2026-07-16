@@ -7,7 +7,6 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_async_session
-from app.services.llm_service import LLMService
 from embedding_pipeline.grounded_generation import GroundedEstimator
 from embedding_pipeline.persistence import DocumentRepository
 from embedding_pipeline.schemas import (
@@ -219,7 +218,6 @@ async def estimate_with_context(
     """
     try:
         repository = DocumentRepository(session)
-        llm_service = LLMService()
 
         estimation_input = {
             "description": request.query,
@@ -232,7 +230,6 @@ async def estimate_with_context(
             query=request.query,
             search_k=request.search_k,
             estimation_input=estimation_input,
-            llm_service=llm_service,
         )
 
         return EstimateWithContextResponse(

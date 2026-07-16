@@ -376,7 +376,6 @@ class DocumentRepository:
         query: str,
         search_k: int,
         estimation_input: dict[str, Any],
-        llm_service: Any,  # LLMService instance (avoid circular import)
     ) -> dict[str, Any]:
         """
         Generate estimation with context from similar historical budgets.
@@ -387,7 +386,6 @@ class DocumentRepository:
             query: Search query to find similar budgets
             search_k: Number of chunks to retrieve as context
             estimation_input: Dict with description, project_type, detail_level, output_format
-            llm_service: LLMService instance for calling LLM
 
         Returns:
             {
@@ -414,16 +412,33 @@ class DocumentRepository:
             # Step 2: Format chunks for prompt (as context block)
             context_block = self._format_chunks_as_context(chunks)
 
-            # Step 3: Inject context into estimation request
+            # Step 3: Inject context into the estimation request
             enriched_description = f"{estimation_input.get('description', '')}\n\n## Similar historical budgets\n{context_block}"
 
-            # Step 4: Call LLM with context
-            estimation_output = await llm_service.stream_project_estimation(
+            # Step 4: Render the estimation prompt and call the LLM. Imported
+            # here to keep the module-level import graph free of app.services.
+            from app.prompts.loader import render_estimation_prompt
+            from app.schemas import EstimationRequest
+            from app.services.guardrails import parse_and_validate
+            from app.services.llm_service import stream_project_estimation
+
+            request = EstimationRequest(
                 description=enriched_description,
-                project_type=estimation_input.get("project_type"),
-                detail_level=estimation_input.get("detail_level"),
-                output_format=estimation_input.get("output_format"),
+                project_type=estimation_input["project_type"],
+                detail_level=estimation_input["detail_level"],
+                output_format=estimation_input["output_format"],
             )
+            system_prompt, user_prompt = render_estimation_prompt(request)
+
+            # stream_project_estimation is a synchronous generator: collect it.
+            raw_output = "".join(stream_project_estimation(system_prompt, user_prompt))
+
+            guardrail = parse_and_validate(raw_output)
+            if not guardrail.passed:
+                raise ValueError(
+                    f"guardrail failed: {'; '.join(guardrail.violations)}"
+                )
+            estimation_output = guardrail.output.model_dump()
 
             elapsed_ms = (time.time() - start_time) * 1000
 
